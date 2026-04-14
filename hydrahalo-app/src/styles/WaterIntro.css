@@ -1,0 +1,119 @@
+/* ═══ WATER INTRO ═══ */
+.water-intro {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 24px;
+  background: #060810;
+  overflow: hidden;
+  /* Fade the entire overlay out during 'done' phase */
+  opacity: 1;
+  transition: opacity 1.4s ease;
+}
+.water-intro--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Background radial glow */
+.water-intro__bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,120,180,0.15), transparent 70%);
+  pointer-events: none;
+}
+
+/* Canvas for ripples */
+.water-intro__canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.water-intro--ripple .water-intro__canvas,
+.water-intro--reveal .water-intro__canvas {
+  opacity: 1;
+}
+
+/* ── DROP ── */
+.water-intro__drop-wrap {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.water-intro__drop {
+  width: 80px; height: 105px;
+  filter: drop-shadow(0 0 22px rgba(0,200,240,0.7));
+  transform: translateY(-220px);
+  opacity: 0;
+  /* Slow, deliberate fall over 1.5s, starting after 0.4s */
+  animation: dropFall 1.5s cubic-bezier(0.25, 0.1, 0.5, 1) 0.4s forwards;
+}
+@keyframes dropFall {
+  0%   { transform: translateY(-220px); opacity: 0; }
+  12%  { opacity: 1; }
+  80%  { transform: translateY(0px) scaleX(1) scaleY(1); opacity: 1; }
+  90%  { transform: translateY(8px) scaleX(1.16) scaleY(0.78); }
+  100% { transform: translateY(5px) scaleX(1.22) scaleY(0.68); opacity: 0.85; }
+}
+
+/* Hide drop once splash begins */
+.water-intro--splash .water-intro__drop,
+.water-intro--ripple .water-intro__drop,
+.water-intro--reveal .water-intro__drop {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease;
+}
+
+/* ── SPLASH ── */
+.water-intro__splash {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0; height: 0;
+  pointer-events: none; z-index: 3;
+}
+
+.splash-particle {
+  position: absolute;
+  width: var(--size, 4px); height: var(--size, 4px);
+  background: radial-gradient(circle, #80eeff, #00a8d0);
+  border-radius: 50%;
+  transform: rotate(var(--angle)) translateY(0);
+  /* Slower, more floaty */
+  animation: splashOut 1.1s cubic-bezier(0.15, 0.7, 0.4, 1) both;
+}
+@keyframes splashOut {
+  0%   { transform: rotate(var(--angle)) translateY(0) scale(1); opacity: 1; }
+  60%  { opacity: 0.9; }
+  100% { transform: rotate(var(--angle)) translateY(calc(-1 * var(--dist))) scale(0.15); opacity: 0; }
+}
+
+.splash-arc {
+  position: absolute;
+  width: 5px; height: 16px;
+  background: linear-gradient(to top, transparent, rgba(0,200,240,0.85));
+  border-radius: 50%;
+  transform-origin: bottom center;
+  animation: splashArc 1.0s cubic-bezier(0.1, 0.6, 0.4, 1) both;
+}
+@keyframes splashArc {
+  0%   { transform: rotate(var(--angle)) translateY(0) scaleY(0.3); opacity: 1; }
+  45%  { opacity: 1; }
+  100% { transform: rotate(var(--angle)) translateY(calc(-1 * var(--dist) * 0.75)) scaleY(1.5); opacity: 0; }
+}
+
+/* ── BRAND REVEAL ── */
+.water-intro__brand {
+  position: absolute; z-index: 4;
+  display: flex; align-items: center; gap: 16px;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 38px;
+  color: #f0f6fc; letter-spacing: -0.03em;
+  opacity: 0;
+  transform: translateY(12px);
+  /* Slow, elegant fade + rise */
+  transition: opacity 1.1s ease, transform 1.1s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.water-intro--reveal .water-intro__brand {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── NO MORE WIPE — replaced by full fade on .water-intro--done ── */
+.water-intro__wipe { display: none; }

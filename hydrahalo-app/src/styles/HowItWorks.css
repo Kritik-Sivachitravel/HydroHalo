@@ -1,0 +1,70 @@
+#how { padding: 96px 48px; }
+.how-header { text-align: center; max-width: 660px; margin: 0 auto 60px; }
+
+.cycle-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  max-width: 1100px; margin: 0 auto; position: relative;
+}
+.cycle-steps::before {
+  content: '';
+  position: absolute; top: 48px; left: 16.7%; right: 16.7%;
+  height: 1px;
+  background: linear-gradient(to right, var(--cyan), transparent 40%, transparent 60%, var(--cyan));
+}
+
+.cycle-step {
+  padding: 0 32px 48px; text-align: center; position: relative; z-index: 1;
+  transition: transform 0.35s cubic-bezier(0.2,0.8,0.3,1);
+}
+.cycle-step:hover { transform: translateY(-8px); }
+
+.step-icon-wrap { width: 96px; height: 96px; margin: 0 auto 24px; position: relative; }
+.step-icon-bg {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid var(--rim); background: var(--panel);
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.cycle-step:hover .step-icon-bg {
+  border-color: var(--cyan); background: rgba(0,200,240,0.06);
+  box-shadow: 0 0 40px rgba(0,200,240,0.15);
+}
+.step-icon-inner {
+  position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center; font-size: 32px;
+}
+.step-number {
+  position: absolute; top: -6px; right: -6px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--cyan); color: var(--void);
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-title {
+  font-family: var(--display); font-size: 19px; font-weight: 700;
+  color: var(--white); margin-bottom: 10px;
+}
+.step-desc { font-family: var(--text); font-size: 15px; color: var(--body); line-height: 1.75; }
+.step-time {
+  display: inline-block; margin-top: 14px;
+  font-family: var(--mono); font-size: 11px; color: var(--cyan);
+  background: var(--cyan-dim); border: 1px solid rgba(0,200,240,0.2);
+  padding: 4px 12px; border-radius: 100px;
+}
+
+.cycle-total {
+  max-width: 1100px; margin: 20px auto 0;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  font-family: var(--text); font-size: 14px; color: var(--body);
+}
+.cycle-total-num {
+  font-family: var(--display); font-size: 40px; font-weight: 800;
+  color: var(--cyan); letter-spacing: -0.04em;
+}
+.cycle-total-label { font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.cycle-total-desc  { font-family: var(--text); font-size: 14px; color: var(--body); }
+
+@media (max-width: 900px) {
+  #how { padding: 64px 20px; }
+  .cycle-steps { grid-template-columns: 1fr; }
+  .cycle-steps::before { display: none; }
+}

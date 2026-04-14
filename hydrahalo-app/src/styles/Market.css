@@ -1,0 +1,46 @@
+#market { padding: 96px 48px; }
+.market-intro { max-width: 1100px; margin: 0 auto 56px; }
+.market-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+}
+.market-card {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: var(--r); padding: 28px;
+  transition: border-color 0.3s, transform 0.3s;
+  position: relative; overflow: hidden;
+}
+.market-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-4px); }
+.market-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, var(--cyan), #0088cc);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
+}
+.market-card:hover::after { transform: scaleX(1); }
+.market-card-icon { font-size: 28px; margin-bottom: 12px; }
+.market-card-title { font-family: var(--display); font-size: 19px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+.market-card-num   { font-family: var(--display); font-size: 30px; font-weight: 800; color: var(--cyan); letter-spacing: -0.04em; line-height: 1; margin-bottom: 8px; }
+.market-card-desc  { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.7; }
+.market-card-source{ font-family: var(--text); font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+.revenue-model {
+  max-width: 1100px; margin: 56px auto 0;
+  background: linear-gradient(135deg, var(--panel), var(--navy));
+  border: 1px solid var(--rim); border-radius: 16px; padding: 40px;
+}
+.revenue-model h3 { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--white); margin-bottom: 28px; }
+.revenue-streams { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.revenue-stream {
+  padding: 20px; background: rgba(0,200,240,0.04);
+  border: 1px solid rgba(0,200,240,0.1); border-radius: 10px;
+}
+.stream-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+.stream-value { font-family: var(--display); font-size: 22px; font-weight: 800; color: var(--white); line-height: 1; letter-spacing: -0.03em; margin-bottom: 8px; }
+.stream-desc  { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.7; }
+
+@media (max-width: 900px) {
+  #market { padding: 64px 20px; }
+  .market-grid { grid-template-columns: 1fr; }
+  .revenue-streams { grid-template-columns: 1fr; }
+}

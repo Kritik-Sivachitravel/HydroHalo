@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HydroHalo — Automated Bottle Sanitization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   DESIGN SYSTEM
+═══════════════════════════════════════ */
+:root {
+  --void: #060810;
+  --deep: #0b1120;
+  --navy: #0f1e35;
+  --panel: #131f33;
+  --rim: #1e3050;
+  --muted: #4a6a8a;
+  --ice: #c8e8f8;
+  --ice-dim: #9dc8e0;
+  --ice-ghost: rgba(200,232,248,0.08);
+  --cyan: #00c8f0;
+  --cyan-dim: rgba(0,200,240,0.15);
+  --cyan-glow: rgba(0,200,240,0.4);
+  --gold: #e8b84b;
+  --gold-dim: rgba(232,184,75,0.15);
+  --white: #f0f6fc;
+  --body: #b8d0e8;
+  --mono: 'DM Mono', monospace;
+  --display: 'Syne', sans-serif;
+  --text: 'Inter', system-ui, sans-serif;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --r: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--white);
+  font-family: var(--text);
+  overflow-x: hidden;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ CURSOR ═══ */
+#cursor {
+  position: fixed; width: 12px; height: 12px;
+  background: var(--cyan); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+  mix-blend-mode: screen;
+}
+#cursor-trail {
+  position: fixed; width: 36px; height: 36px;
+  border: 1px solid rgba(0,200,240,0.4); border-radius: 50%;
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.25s ease-out, opacity 0.3s;
+}
+body:hover #cursor { opacity: 1; }
+
+/* ═══ NAV ═══ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  height: 68px;
+  background: linear-gradient(to bottom, rgba(6,8,16,0.96), transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(200,232,248,0.06);
+  transition: background 0.3s;
+}
+nav.scrolled {
+  background: rgba(6,8,16,0.98);
+  border-bottom-color: rgba(200,232,248,0.1);
+}
+.nav-logo {
+  font-family: var(--display); font-weight: 800; font-size: 20px;
+  color: var(--white); text-decoration: none;
+  display: flex; align-items: center; gap: 10px;
+  letter-spacing: -0.02em;
+}
+.nav-logo-mark {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--cyan), #0088cc);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.nav-links {
+  display: flex; gap: 36px; list-style: none;
+}
+.nav-links a {
+  font-family: var(--text); font-size: 13px; font-weight: 500;
+  color: var(--body); text-decoration: none; letter-spacing: 0.03em;
+  transition: color 0.2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; left: 0; bottom: -3px;
+  width: 0; height: 1px; background: var(--cyan);
+  transition: width 0.25s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { width: 100%; }
+.nav-cta {
+  background: var(--cyan); color: var(--void) !important;
+  padding: 8px 20px; border-radius: 6px;
+  font-weight: 500 !important;
+  transition: background 0.2s, transform 0.15s !important;
+}
+.nav-cta:hover { background: #80e0f8 !important; transform: translateY(-1px); }
+.nav-cta::after { display: none !important; }
+
+/* ═══ MOBILE NAV TOGGLE ═══ */
+.nav-toggle { display: none; background: none; border: none; cursor: none; padding: 8px; }
+.nav-toggle span {
+  display: block; width: 22px; height: 2px;
+  background: var(--white); margin: 4px 0;
+  transition: transform 0.25s, opacity 0.25s;
+}
+.nav-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ═══ SECTIONS ═══ */
+section { min-height: 100vh; position: relative; }
+
+/* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+#hero {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  padding: 100px 48px 60px;
+  position: relative; overflow: hidden;
+  min-height: 100vh;
+}
+
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,120,180,0.18) 0%, transparent 65%),
+              radial-gradient(ellipse 50% 40% at 20% 80%, rgba(0,80,140,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse 40% 30% at 80% 20%, rgba(232,184,75,0.06) 0%, transparent 60%);
+}
+
+/* Animated particles */
+.particles { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+.particle {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: var(--cyan);
+  border-radius: 50%;
+  animation: float-particle linear infinite;
+  opacity: 0;
+}
+@keyframes float-particle {
+  0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-20px) translateX(var(--drift)); opacity: 0; }
+}
+
+/* UV ring animation */
+.uv-ring-container {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  width: 520px; height: 520px;
+  z-index: 0;
+  pointer-events: none;
+}
+.uv-ring {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0,200,240,0.1);
+  animation: pulse-ring 4s ease-in-out infinite;
+}
+.uv-ring:nth-child(1) { transform: scale(0.3); animation-delay: 0s; }
+.uv-ring:nth-child(2) { transform: scale(0.55); animation-delay: 0.8s; }
+.uv-ring:nth-child(3) { transform: scale(0.8); animation-delay: 1.6s; }
+.uv-ring:nth-child(4) { transform: scale(1.05); animation-delay: 2.4s; }
+@keyframes pulse-ring {
+  0%, 100% { opacity: 0.08; border-color: rgba(0,200,240,0.1); }
+  50% { opacity: 0.25; border-color: rgba(0,200,240,0.3); }
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 900px; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,200,240,0.1); border: 1px solid rgba(0,200,240,0.25);
+  border-radius: 100px; padding: 6px 16px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--cyan);
+  margin-bottom: 32px;
+  animation: fadeInUp 0.8s both;
+}
+.badge-dot {
+  width: 6px; height: 6px; background: var(--cyan);
+  border-radius: 50%;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero-h1 {
+  font-family: var(--display); font-weight: 800;
+  font-size: clamp(38px, 5.5vw, 68px);
+  line-height: 1.05; letter-spacing: -0.03em;
+  color: var(--white);
+  margin-bottom: 16px;
+  animation: fadeInUp 0.8s 0.15s both;
+}
+.hero-h1 .accent { color: var(--cyan); }
+.hero-h1 .italic { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--ice-dim); }
+
+.hero-sub {
+  font-family: var(--text); font-weight: 400;
+  font-size: clamp(15px, 1.5vw, 17px);
+  color: var(--body); line-height: 1.8;
+  max-width: 580px; margin: 0 auto 40px;
+  animation: fadeInUp 0.8s 0.3s both;
+}
+
+.hero-ctas {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  animation: fadeInUp 0.8s 0.45s both;
+}
+
+.btn-primary {
+  background: var(--cyan); color: var(--void);
+  padding: 16px 36px; border-radius: 8px;
+  font-family: var(--display); font-weight: 700; font-size: 15px;
+  text-decoration: none; letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 30px rgba(0,200,240,0.25);
+}
+.btn-primary:hover {
+  background: #60d8f8; transform: translateY(-2px);
+  box-shadow: 0 0 50px rgba(0,200,240,0.4);
+}
+.btn-outline {
+  background: transparent; color: var(--white);
+  padding: 16px 36px; border-radius: 8px;
+  border: 1px solid rgba(200,232,248,0.25);
+  font-family: var(--display); font-weight: 600; font-size: 15px;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.btn-outline:hover {
+  border-color: var(--cyan); background: rgba(0,200,240,0.06);
+  transform: translateY(-2px);
+}
+
+.hero-stats {
+  display: flex; gap: 0; justify-content: center;
+  margin-top: 56px; border-top: 1px solid var(--rim);
+  padding-top: 32px;
+  animation: fadeInUp 0.8s 0.6s both;
+}
+.hero-stat {
+  padding: 0 36px; text-align: center;
+  border-right: 1px solid var(--rim);
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat-num {
+  font-family: var(--display); font-size: 32px; font-weight: 800;
+  color: var(--cyan); line-height: 1; display: block;
+  letter-spacing: -0.03em;
+}
+.hero-stat-label {
+  font-family: var(--mono); font-size: 10px; color: var(--body);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px;
+  max-width: 120px;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.scroll-indicator {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+  color: var(--muted); text-transform: uppercase;
+  animation: fadeInUp 1s 1s both;
+}
+.scroll-line {
+  width: 1px; height: 40px; background: linear-gradient(to bottom, var(--muted), transparent);
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+@keyframes scroll-pulse { 0%,100%{opacity:0.4;height:30px} 50%{opacity:1;height:50px} }
+
+/* ═══════════════════════════════════════
+   PROBLEM SECTION
+═══════════════════════════════════════ */
+#problem {
+  padding: 96px 48px;
+  background: var(--deep);
+  min-height: auto;
+  position: relative;
+}
+#problem::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent, var(--rim), transparent);
+}
+
+.section-tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--cyan); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-tag::before {
+  content: ''; display: block; width: 30px; height: 1px; background: var(--cyan);
+}
+
+.section-title {
+  font-family: var(--display); font-weight: 800;
+  font-size: clamp(26px, 3.5vw, 44px);
+  line-height: 1.1; letter-spacing: -0.03em;
+  color: var(--white); margin-bottom: 20px;
+}
+.section-title .accent { color: var(--cyan); }
+.section-title .italic { font-family: var(--serif); font-style: italic; font-weight: 400; }
+
+.section-body {
+  font-family: var(--text); font-size: 16px; line-height: 1.8; color: var(--body);
+  max-width: 580px; margin-bottom: 40px;
+}
+
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 32px; max-width: 1100px; margin: 0 auto;
+}
+
+.problem-left { padding-right: 40px; }
+
+.bacteria-cards {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.bacteria-card {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: var(--r); padding: 24px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.bacteria-card:hover {
+  border-color: var(--cyan); transform: translateX(4px);
+}
+.bacteria-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--cyan);
+  transform: scaleY(0); transform-origin: bottom;
+  transition: transform 0.3s;
+}
+.bacteria-card:hover::before { transform: scaleY(1); }
+
+.bacteria-card-num {
+  font-family: var(--display); font-size: 32px; font-weight: 800;
+  color: var(--cyan); line-height: 1; letter-spacing: -0.04em;
+}
+.bacteria-card-unit {
+  font-family: var(--mono); font-size: 11px; color: var(--body);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px;
+}
+.bacteria-card-desc {
+  font-family: var(--text); font-size: 14px; color: var(--body); margin-top: 10px; line-height: 1.7;
+}
+.bacteria-card-source {
+  font-family: var(--text); font-size: 12px; color: var(--muted);
+  margin-top: 8px;
+}
+
+.insight-block {
+  background: linear-gradient(135deg, rgba(0,200,240,0.05), rgba(0,120,180,0.08));
+  border: 1px solid rgba(0,200,240,0.15);
+  border-radius: var(--r); padding: 32px;
+}
+.insight-block h3 {
+  font-family: var(--display); font-size: 18px; font-weight: 700;
+  color: var(--white); margin-bottom: 16px;
+}
+.insight-item {
+  display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;
+}
+.insight-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--cyan-dim); border: 1px solid rgba(0,200,240,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; margin-top: 2px;
+}
+.insight-text { font-family: var(--text); font-size: 15px; color: var(--body); line-height: 1.7; }
+.insight-text strong { color: var(--white); }
+
+/* ═══════════════════════════════════════
+   HOW IT WORKS
+═══════════════════════════════════════ */
+#how {
+  padding: 96px 48px;
+  min-height: auto;
+  position: relative;
+}
+
+.how-header { text-align: center; max-width: 660px; margin: 0 auto 60px; }
+.how-header .section-tag { justify-content: center; }
+.how-header .section-tag::before { display: none; }
+
+.cycle-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0; max-width: 1100px; margin: 0 auto;
+  position: relative;
+}
+
+.cycle-steps::before {
+  content: '';
+  position: absolute; top: 60px; left: 16.7%; right: 16.7%;
+  height: 1px;
+  background: linear-gradient(to right, var(--cyan), transparent 40%, transparent 60%, var(--cyan));
+  z-index: 0;
+}
+
+.cycle-step {
+  padding: 0 32px 48px;
+  text-align: center; position: relative; z-index: 1;
+  transition: transform 0.3s;
+}
+.cycle-step:hover { transform: translateY(-6px); }
+
+.step-icon-wrap {
+  width: 96px; height: 96px; margin: 0 auto 24px;
+  position: relative;
+}
+.step-icon-bg {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid var(--rim);
+  background: var(--panel);
+  transition: border-color 0.3s, background 0.3s;
+}
+.cycle-step:hover .step-icon-bg {
+  border-color: var(--cyan);
+  background: rgba(0,200,240,0.06);
+  box-shadow: 0 0 40px rgba(0,200,240,0.15);
+}
+.step-icon-inner {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.step-number {
+  position: absolute; top: -6px; right: -6px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--cyan); color: var(--void);
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.step-title {
+  font-family: var(--display); font-size: 19px; font-weight: 700;
+  color: var(--white); margin-bottom: 10px;
+}
+.step-desc { font-family: var(--text); font-size: 15px; color: var(--body); line-height: 1.75; }
+.step-time {
+  display: inline-block; margin-top: 14px;
+  font-family: var(--mono); font-size: 11px; color: var(--cyan);
+  background: var(--cyan-dim); border: 1px solid rgba(0,200,240,0.2);
+  padding: 4px 12px; border-radius: 100px;
+}
+
+.cycle-total {
+  max-width: 1100px; margin: 20px auto 0;
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em;
+  color: var(--body); text-transform: uppercase;
+}
+.cycle-total-num {
+  font-family: var(--display); font-size: 40px; font-weight: 800;
+  color: var(--cyan); letter-spacing: -0.04em;
+}
+
+/* ═══════════════════════════════════════
+   SCIENCE
+═══════════════════════════════════════ */
+#science {
+  padding: 96px 48px;
+  background: var(--deep);
+  min-height: auto;
+  position: relative;
+}
+
+.science-layout {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+  align-items: start;
+}
+
+.science-left { position: sticky; top: 100px; }
+
+.mechanism-visual {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: 16px; padding: 40px; margin-top: 32px;
+  position: relative; overflow: hidden;
+}
+.mechanism-visual::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,200,240,0.12), transparent 70%);
+}
+
+.dna-diagram {
+  display: flex; flex-direction: column; gap: 8px;
+  margin: 24px 0;
+}
+.dna-row {
+  display: flex; align-items: center; gap: 6px;
+  height: 20px;
+}
+.dna-base {
+  width: 20px; height: 14px; border-radius: 3px;
+  font-family: var(--mono); font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--void); font-weight: 500;
+}
+.base-t { background: #60c8f0; }
+.base-a { background: #e8b84b; }
+.base-c { background: #80e890; }
+.base-g { background: #f06880; }
+.dna-bond { width: 6px; height: 2px; background: var(--rim); }
+.dna-backbone-l { width: 8px; height: 100%; border-right: 2px solid rgba(0,200,240,0.3); }
+.dna-backbone-r { width: 8px; height: 100%; border-left: 2px solid rgba(0,200,240,0.3); }
+.dna-uvc-arrow {
+  position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.arrow-beam {
+  width: 3px; height: 50px;
+  background: linear-gradient(to bottom, var(--cyan), transparent);
+  border-radius: 2px; animation: beam-pulse 2s ease-in-out infinite;
+}
+@keyframes beam-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+.arrow-label {
+  font-family: var(--mono); font-size: 9px; color: var(--cyan);
+  letter-spacing: 0.1em; writing-mode: vertical-rl; transform: rotate(180deg);
+  margin-top: 4px;
+}
+
+.mech-label {
+  font-family: var(--mono); font-size: 10px; color: var(--body);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+}
+.mech-desc { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.7; }
+
+.science-studies { display: flex; flex-direction: column; gap: 24px; }
+
+.study-card {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: var(--r); padding: 28px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.study-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-3px); }
+
+.study-journal {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--cyan);
+  background: var(--cyan-dim); border: 1px solid rgba(0,200,240,0.2);
+  display: inline-block; padding: 3px 10px; border-radius: 4px;
+  margin-bottom: 14px;
+}
+.study-title-text {
+  font-family: var(--display); font-size: 15px; font-weight: 700;
+  color: var(--white); line-height: 1.4; margin-bottom: 8px;
+}
+.study-authors {
+  font-family: var(--text); font-size: 13px; color: var(--muted); margin-bottom: 14px;
+}
+.study-finding {
+  font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.75; margin-bottom: 16px;
+}
+.study-result {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,200,100,0.08); border: 1px solid rgba(0,200,100,0.2);
+  border-radius: 6px; padding: 8px 14px;
+  font-family: var(--text); font-size: 13px; font-weight: 500; color: #60e8a0;
+}
+.study-result::before { content: '✓'; font-size: 12px; }
+.study-link {
+  display: block; margin-top: 14px;
+  font-family: var(--mono); font-size: 11px; color: var(--ice-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.study-link:hover { color: var(--cyan); }
+
+/* ═══════════════════════════════════════
+   MARKET / BUSINESS
+═══════════════════════════════════════ */
+#market {
+  padding: 96px 48px;
+  min-height: auto;
+}
+
+.market-intro { max-width: 1100px; margin: 0 auto 56px; }
+
+.market-grid {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+}
+
+.market-card {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: var(--r); padding: 32px;
+  transition: border-color 0.3s, transform 0.3s;
+  position: relative; overflow: hidden;
+}
+.market-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-4px); }
+.market-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, var(--cyan), #0088cc);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s;
+}
+.market-card:hover::after { transform: scaleX(1); }
+
+.market-card-icon { font-size: 32px; margin-bottom: 16px; }
+.market-card-title {
+  font-family: var(--display); font-size: 19px; font-weight: 700;
+  color: var(--white); margin-bottom: 6px;
+}
+.market-card-num {
+  font-family: var(--display); font-size: 30px; font-weight: 800;
+  color: var(--cyan); letter-spacing: -0.04em; line-height: 1;
+  margin-bottom: 6px;
+}
+.market-card-desc { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.7; }
+.market-card-source {
+  font-family: var(--text); font-size: 12px; color: var(--muted); margin-top: 12px;
+}
+
+.revenue-model {
+  max-width: 1100px; margin: 60px auto 0;
+  background: linear-gradient(135deg, var(--panel), var(--navy));
+  border: 1px solid var(--rim); border-radius: 16px; padding: 48px;
+}
+.revenue-model h3 {
+  font-family: var(--display); font-size: 22px; font-weight: 700;
+  color: var(--white); margin-bottom: 28px;
+}
+.revenue-streams {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+}
+.revenue-stream {
+  padding: 24px; background: rgba(0,200,240,0.04);
+  border: 1px solid rgba(0,200,240,0.1); border-radius: 10px;
+}
+.stream-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;
+}
+.stream-value {
+  font-family: var(--display); font-size: 22px; font-weight: 800;
+  color: var(--white); line-height: 1; letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+.stream-desc { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.7; }
+
+/* ═══════════════════════════════════════
+   PROTOTYPE
+═══════════════════════════════════════ */
+#prototype {
+  padding: 96px 48px;
+  background: var(--deep);
+  min-height: auto;
+}
+
+.proto-layout {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+  align-items: start;
+}
+
+.proto-visual {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: 16px; padding: 40px 32px;
+  text-align: center; position: relative; overflow: hidden;
+}
+
+.proto-specs { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+.spec-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid rgba(200,232,248,0.06);
+}
+.spec-key { font-family: var(--text); font-size: 13px; color: var(--body); }
+.spec-val { font-family: var(--text); font-size: 13px; color: var(--white); font-weight: 500; }
+
+.bom-title {
+  font-family: var(--display); font-size: 22px; font-weight: 700;
+  color: var(--white); margin-bottom: 24px;
+}
+.bom-table { width: 100%; border-collapse: collapse; }
+.bom-table th {
+  text-align: left; font-family: var(--text); font-size: 12px;
+  font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+  padding: 0 12px 14px;
+  border-bottom: 1px solid var(--rim);
+}
+.bom-table td {
+  padding: 11px 12px;
+  font-family: var(--text); font-size: 13px; color: var(--body);
+  border-bottom: 1px solid rgba(200,232,248,0.06);
+}
+.bom-table td:first-child { color: var(--white); font-weight: 500; }
+.bom-table td:last-child { color: var(--cyan); font-family: var(--mono); font-size: 12px; }
+.bom-total td {
+  font-family: var(--display); font-size: 15px; font-weight: 700 !important;
+  padding-top: 16px; border-bottom: none;
+  color: var(--white) !important;
+}
+.bom-total td:last-child { color: var(--gold) !important; font-size: 18px; }
+
+/* ═══════════════════════════════════════
+   TEAM
+═══════════════════════════════════════ */
+#team {
+  padding: 96px 48px;
+  min-height: auto;
+}
+.team-header { text-align: center; max-width: 560px; margin: 0 auto 52px; }
+.team-header .section-tag { justify-content: center; }
+.team-header .section-tag::before { display: none; }
+
+.team-grid {
+  max-width: 900px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 24px;
+}
+.team-card {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: var(--r); padding: 32px 28px;
+  text-align: center; width: 160px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.team-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-6px); }
+.team-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--muted));
+  border: 2px solid var(--rim);
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 22px; font-weight: 800;
+  color: var(--cyan); letter-spacing: -0.02em;
+  transition: border-color 0.3s;
+}
+.team-card:hover .team-avatar { border-color: var(--cyan); }
+.team-name {
+  font-family: var(--display); font-size: 16px; font-weight: 700;
+  color: var(--white); margin-bottom: 6px;
+}
+.team-role { font-family: var(--mono); font-size: 10px; color: var(--body); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ═══════════════════════════════════════
+   CONTACT / CTA
+═══════════════════════════════════════ */
+#contact {
+  padding: 96px 48px;
+  background: var(--deep);
+  min-height: auto;
+  text-align: center;
+}
+.cta-block {
+  max-width: 700px; margin: 0 auto;
+  position: relative;
+}
+.cta-block::before {
+  content: '';
+  position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,200,240,0.08), transparent 70%);
+  z-index: 0;
+}
+.cta-block > * { position: relative; z-index: 1; }
+
+.cta-block .section-tag { justify-content: center; }
+.cta-block .section-tag::before { display: none; }
+
+.cta-title {
+  font-family: var(--display); font-weight: 800;
+  font-size: clamp(30px, 4.5vw, 52px);
+  line-height: 1.1; letter-spacing: -0.04em;
+  color: var(--white); margin-bottom: 20px;
+}
+.cta-title .accent { color: var(--cyan); }
+
+.cta-desc { font-family: var(--text); font-size: 17px; color: var(--body); line-height: 1.8; margin-bottom: 40px; }
+
+.contact-links {
+  display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
+  margin-bottom: 64px;
+}
+.contact-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: 10px; padding: 14px 22px;
+  font-family: var(--text); font-size: 14px; font-weight: 500; color: var(--body);
+  text-decoration: none;
+  transition: border-color 0.3s, color 0.3s, transform 0.2s;
+}
+.contact-chip:hover { border-color: var(--cyan); color: var(--white); transform: translateY(-2px); }
+.chip-icon { font-size: 18px; }
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer {
+  background: var(--void);
+  border-top: 1px solid var(--rim);
+  padding: 40px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-brand {
+  font-family: var(--display); font-weight: 800; font-size: 18px;
+  color: var(--white); letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 10px;
+}
+.footer-copy {
+  font-family: var(--text); font-size: 13px; color: var(--muted);
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  font-family: var(--text); font-size: 13px; font-weight: 500; color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--cyan); }
+
+/* ═══════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════ */
+.reveal {
+  opacity: 0; transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .nav-links.open {
+    display: flex; flex-direction: column;
+    position: fixed; top: 68px; left: 0; right: 0;
+    background: rgba(6,8,16,0.98); border-top: 1px solid var(--rim);
+    padding: 24px; gap: 20px;
+  }
+  .nav-toggle { display: block; }
+  .problem-grid,
+  .science-layout,
+  .proto-layout { grid-template-columns: 1fr; gap: 48px; }
+  .market-grid { grid-template-columns: 1fr; }
+  .revenue-streams { grid-template-columns: 1fr; }
+  .cycle-steps { grid-template-columns: 1fr; }
+  .cycle-steps::before { display: none; }
+  #hero, #problem, #how, #science, #market, #prototype, #team, #contact {
+    padding: 64px 20px;
+  }
+  .hero-stats { flex-wrap: wrap; }
+  .hero-stat { border-right: none; border-bottom: 1px solid var(--rim); padding: 20px 24px; width: 50%; }
+  footer { flex-direction: column; text-align: center; padding: 28px 20px; }
+  .uv-ring-container { width: 300px; height: 300px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ CURSOR ═══ -->
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav id="navbar">
+  <a class="nav-logo" href="#hero">
+    <div class="nav-logo-mark">💧</div>
+    HydroHalo
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#problem">The Problem</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#science">Science</a></li>
+    <li><a href="#market">Market</a></li>
+    <li><a href="#prototype">Prototype</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#contact" class="nav-cta">Contact</a></li>
+  </ul>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO
+═══════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="particles" id="particles"></div>
+  <div class="uv-ring-container">
+    <div class="uv-ring"></div>
+    <div class="uv-ring"></div>
+    <div class="uv-ring"></div>
+    <div class="uv-ring"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      UV-C Germicidal Technology · Scientifically Validated
+    </div>
+
+    <h1 class="hero-h1">
+      Your bottle is<br>
+      <span class="accent">dirtier than</span><br>
+      <span class="italic">you think.</span>
+    </h1>
+
+    <p class="hero-sub">
+      HydroHalo is an automated B2B water bottle sanitization kiosk — combining a high-pressure rinse, warm-air drying, and UV-C sterilization into a single 60-second cycle. Deployed in airports, hospitals, gyms, and universities.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="#how" class="btn-primary">See How It Works →</a>
+      <a href="#science" class="btn-outline">The Science</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">20.8M</span>
+        <div class="hero-stat-label">CFUs found on a single reusable bottle</div>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">48h</span>
+        <div class="hero-stat-label">Time for biofilm to form without cleaning</div>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">99.99%</span>
+        <div class="hero-stat-label">Bacterial kill rate via UV-C (peer-reviewed)</div>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">60s</span>
+        <div class="hero-stat-label">Complete cleaning cycle — start to finish</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PROBLEM
+═══════════════════════════════════════ -->
+<section id="problem">
+  <div class="problem-grid">
+    <div class="problem-left">
+      <div class="section-tag reveal">The Problem</div>
+      <h2 class="section-title reveal reveal-delay-1">
+        Reusable bottles are<br>
+        a <span class="accent">hidden health risk</span>
+      </h2>
+      <p class="section-body reveal reveal-delay-2">
+        Narrow openings, rubber seals, built-in straws — modern bottle designs are nearly impossible to clean properly. Most people rinse and go. The result: bacterial counts that rival toilet seats, in the object people put their mouth on dozens of times a day.
+      </p>
+      <div class="insight-block reveal reveal-delay-3">
+        <h3>What our customer discovery found</h3>
+        <div class="insight-item">
+          <div class="insight-icon">🎓</div>
+          <div class="insight-text"><strong>College students</strong> wash their bottles every few days at best — many cite lack of time and no dishwasher access in dorms.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon">🏃</div>
+          <div class="insight-text"><strong>Gym-goers and athletes</strong> refill multiple times daily but clean only when bottles smell or show visible buildup.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon">🏥</div>
+          <div class="insight-text"><strong>Healthcare workers</strong> carry bottles through patient areas all day. Full sanitization between patients simply isn't feasible during a busy shift.</div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon">✈️</div>
+          <div class="insight-text"><strong>Travelers</strong> refill bottles at water fountains across airports — high-traffic environments with no cleaning infrastructure.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bacteria-cards reveal reveal-delay-2">
+      <div class="bacteria-card">
+        <div class="bacteria-card-num">20.8M</div>
+        <div class="bacteria-card-unit">Colony Forming Units (CFUs)</div>
+        <div class="bacteria-card-desc">Found on a single reusable water bottle — more bacteria than a toilet seat, door handle, or kitchen sink.</div>
+        <div class="bacteria-card-source">Source: ResearchGate — Rapid Microbial Growth in Reusable Drinking Water Bottles</div>
+      </div>
+      <div class="bacteria-card">
+        <div class="bacteria-card-num">1–2M</div>
+        <div class="bacteria-card-unit">CFUs per mL of water</div>
+        <div class="bacteria-card-desc">Generated inside a bottle in a single day when left undisturbed with standing water.</div>
+        <div class="bacteria-card-source">Source: ResearchGate — Rapid Microbial Growth study</div>
+      </div>
+      <div class="bacteria-card">
+        <div class="bacteria-card-num">48h</div>
+        <div class="bacteria-card-unit">Biofilm formation window</div>
+        <div class="bacteria-card-desc">Microorganisms form a biofilm on bottle interiors in as little as 48 hours. Rinsing with water cannot remove established biofilm — physical scrubbing is required.</div>
+        <div class="bacteria-card-source">Source: PMC — Growing and Analyzing Static Biofilms (PMC4568995)</div>
+      </div>
+      <div class="bacteria-card">
+        <div class="bacteria-card-num">30–50%</div>
+        <div class="bacteria-card-unit">Manual cleaning success rate</div>
+        <div class="bacteria-card-desc">Even in controlled healthcare settings, only 30–50% of targeted surfaces are properly cleaned via manual methods due to human error and protocol variation.</div>
+        <div class="bacteria-card-source">Source: PMC systematic review — UV disinfection vs. manual (PMC8869636)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════ -->
+<section id="how">
+  <div class="how-header">
+    <div class="section-tag reveal">How It Works</div>
+    <h2 class="section-title reveal reveal-delay-1">Three stages.<br><span class="italic accent">One clean bottle.</span></h2>
+    <p class="section-body reveal reveal-delay-2" style="margin:0 auto;text-align:center;">
+      HydroHalo sequences each stage in the order the science recommends — rinse first to remove debris, dry to maximize UV-C efficiency, then sterilize.
+    </p>
+  </div>
+
+  <div class="cycle-steps">
+    <div class="cycle-step reveal">
+      <div class="step-icon-wrap">
+        <div class="step-icon-bg"></div>
+        <div class="step-icon-inner">💧</div>
+        <div class="step-number">1</div>
+      </div>
+      <div class="step-title">High-Pressure Rinse</div>
+      <div class="step-desc">A pressurized water spray flushes the bottle interior and lid — removing visible debris, residue, and early-stage biofilm before UV-C exposure. UV-C works by line-of-sight; a pre-rinse is the scientifically correct first step.</div>
+      <span class="step-time">~20 seconds</span>
+    </div>
+
+    <div class="cycle-step reveal reveal-delay-2">
+      <div class="step-icon-wrap">
+        <div class="step-icon-bg"></div>
+        <div class="step-icon-inner">💨</div>
+        <div class="step-number">2</div>
+      </div>
+      <div class="step-title">Warm-Air Drying</div>
+      <div class="step-desc">A blower fan circulates warm air through the bottle. Residual moisture scatters UV photons and reduces effective dose delivery. Drying before sterilization maximizes UV-C kill rate and prevents bacterial regrowth from moisture retention.</div>
+      <span class="step-time">~10 seconds</span>
+    </div>
+
+    <div class="cycle-step reveal reveal-delay-3">
+      <div class="step-icon-wrap">
+        <div class="step-icon-bg"></div>
+        <div class="step-icon-inner">✨</div>
+        <div class="step-number">3</div>
+      </div>
+      <div class="step-title">UV-C Sterilization</div>
+      <div class="step-desc">UV-C LEDs at 265–275 nm — the peak germicidal wavelength confirmed by DNA absorption research — irradiate the clean, dry interior. Photons are absorbed by bacterial DNA, forming pyrimidine dimers that permanently block replication.</div>
+      <span class="step-time">~30 seconds</span>
+    </div>
+  </div>
+
+  <div class="cycle-total reveal">
+    <span class="cycle-total-num">60s</span>
+    <div>
+      <div style="font-size:15px;color:var(--white);font-family:var(--display);font-weight:700;margin-bottom:6px;">Total cycle time</div>
+      <div style="font-family:var(--text);font-size:14px;color:var(--body);">Place bottle → close door → retrieve a clean, dry, sterilized bottle</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SCIENCE
+═══════════════════════════════════════ -->
+<section id="science">
+  <div class="science-layout">
+    <div class="science-left">
+      <div class="section-tag reveal">The Science</div>
+      <h2 class="section-title reveal reveal-delay-1">
+        Not a trend.<br>
+        <span class="italic">100+ years of</span><br>
+        <span class="accent">proven science.</span>
+      </h2>
+      <p class="section-body reveal reveal-delay-2">
+        UV-C germicidal irradiation has been used in municipal water treatment since 1910. The mechanism is fully characterized at the molecular level: photons at 265 nm are absorbed by bacterial DNA, causing irreversible structural damage that permanently blocks cell division.
+      </p>
+
+      <div class="mechanism-visual reveal reveal-delay-3">
+        <div class="mech-label">DNA damage mechanism</div>
+        <div style="display:flex;gap:16px;align-items:center;position:relative;">
+          <div>
+            <div class="dna-diagram">
+              <div class="dna-row"><div class="dna-backbone-l"></div><div class="dna-base base-t">T</div><div class="dna-bond"></div><div class="dna-base base-a">A</div><div class="dna-backbone-r"></div></div>
+              <div class="dna-row"><div class="dna-backbone-l"></div><div class="dna-base base-c">C</div><div class="dna-bond"></div><div class="dna-base base-g">G</div><div class="dna-backbone-r"></div></div>
+              <div class="dna-row"><div class="dna-backbone-l"></div><div class="dna-base base-t" style="background:#f09060;color:#fff;outline:2px solid rgba(255,100,0,0.8)">T</div><div class="dna-bond"></div><div class="dna-base base-t" style="background:#f09060;color:#fff;outline:2px solid rgba(255,100,0,0.8)">T</div><div class="dna-backbone-r"></div></div>
+              <div class="dna-row"><div class="dna-backbone-l"></div><div class="dna-base base-a">A</div><div class="dna-bond"></div><div class="dna-base base-t">T</div><div class="dna-backbone-r"></div></div>
+              <div class="dna-row"><div class="dna-backbone-l"></div><div class="dna-base base-g">G</div><div class="dna-bond"></div><div class="dna-base base-c">C</div><div class="dna-backbone-r"></div></div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div class="dna-uvc-arrow" style="position:static;display:flex;flex-direction:column;gap:4px;">
+              <div class="arrow-beam" style="width:100%;height:3px;background:linear-gradient(to right,var(--cyan),transparent);border-radius:2px;"></div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:0.1em;">265nm UV-C →</div>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:var(--body);line-height:1.6;">
+              Adjacent thymine bases fuse (<span style="color:#f09060">highlighted</span>), forming cyclobutane pyrimidine dimers (CPDs). DNA polymerase cannot copy across the lesion → cell cannot divide → bacterium is inactivated.
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--rim);">
+          <div class="mech-label">Key advantage</div>
+          <div class="mech-desc">Bacteria cannot develop genetic resistance to UV-C. The physics of photon absorption do not change with microbial evolution — unlike antibiotics and chemical disinfectants.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="science-studies">
+      <div class="study-card reveal">
+        <div class="study-journal">Frontiers in Microbiology · 2021</div>
+        <div class="study-title-text">Disinfection Performance of a Drinking Water Bottle System With a UV-C LED Cap Against Waterborne Pathogens</div>
+        <div class="study-authors">Mariita et al. · Crystal IS / Asahi Kasei · doi:10.3389/fmicb.2021.719578</div>
+        <div class="study-finding">The most directly applicable study to HydroHalo's concept: UV-C LED caps applied to inoculated stainless-steel water bottles (E. coli, P. aeruginosa, V. cholerae) under worst-case stationary conditions. 55-second UV-C cycle tested.</div>
+        <div class="study-result">99.99% E. coli inactivation in 55 seconds (LRV4)</div>
+        <a class="study-link" href="https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2021.719578/full" target="_blank">→ Read full paper at Frontiers in Microbiology</a>
+      </div>
+
+      <div class="study-card reveal reveal-delay-1">
+        <div class="study-journal">Scientific Reports (Nature) · 2026</div>
+        <div class="study-title-text">UV-C LED Wavelength Effects on Inactivation Kinetics, DNA Damage and Membrane Integrity in Drinking Water Indicator Bacteria</div>
+        <div class="study-authors">Scientific Reports · doi:10.1038/s41598-026-44556-8</div>
+        <div class="study-finding">Tested five UV-C wavelengths (255, 260, 265, 270, 280 nm) against E. coli and Enterococcus faecium. 265 nm achieved highest inactivation efficiency per unit fluence. DNA lesions were largely irreversible — no significant bacterial recovery after exposure.</div>
+        <div class="study-result">Up to 6-log inactivation below 7 mJ/cm² · 265nm confirmed optimal</div>
+        <a class="study-link" href="https://www.nature.com/articles/s41598-026-44556-8" target="_blank">→ Read full paper at Nature/Scientific Reports</a>
+      </div>
+
+      <div class="study-card reveal reveal-delay-2">
+        <div class="study-journal">Photochemical & Photobiological Sciences · 2023</div>
+        <div class="study-title-text">Germicidal Efficacy of Continuous and Pulsed UV-C Radiation on Pathogen Models and SARS-CoV-2</div>
+        <div class="study-authors">Springer Nature · doi:10.1007/s43630-023-00521-2</div>
+        <div class="study-finding">Direct comparison of UV-C LEDs and mercury lamps across bacteria, endospores, and SARS-CoV-2. E. coli Log 4.1 reduction at 18 mJ/cm². SARS-CoV-2 Log 3.4+ reduction at 13.3 mJ/cm². No statistical difference between continuous and pulsed modes at equivalent dose.</div>
+        <div class="study-result">Log 4.1 E. coli reduction · SARS-CoV-2 effectively inactivated</div>
+        <a class="study-link" href="https://link.springer.com/article/10.1007/s43630-023-00521-2" target="_blank">→ Read full paper at Springer Nature</a>
+      </div>
+
+      <div class="study-card reveal reveal-delay-3">
+        <div class="study-journal">U.S. EPA / WHO · Regulatory Recognition</div>
+        <div class="study-title-text">UV Disinfection Accepted for Municipal Drinking Water Treatment</div>
+        <div class="study-authors">EPA LT2ESWTR · WHO Drinking Water Guidelines</div>
+        <div class="study-finding">The U.S. EPA accepts UV disinfection as a method for drinking water plants to obtain inactivation credits for Cryptosporidium, Giardia, and viruses. WHO recognizes UV-C as an approved point-of-use water disinfection method. This regulatory acceptance reflects decades of demonstrated public health efficacy.</div>
+        <div class="study-result">EPA-accepted · WHO-recognized · Clinically deployed since 1910</div>
+        <a class="study-link" href="https://www.epa.gov/ground-water-and-drinking-water/ultraviolet-disinfection-guidance-manual" target="_blank">→ EPA UV Disinfection Guidance Manual</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MARKET
+═══════════════════════════════════════ -->
+<section id="market">
+  <div class="market-intro">
+    <div class="section-tag reveal">Market Opportunity</div>
+    <h2 class="section-title reveal reveal-delay-1">
+      Four massive markets.<br>
+      <span class="italic accent">Zero direct competitors.</span>
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      HydroHalo operates on a B2B placement model — targeting institutions where large numbers of people carry reusable bottles daily. No existing automated, brand-agnostic water bottle cleaning kiosk serves this institutional market.
+    </p>
+  </div>
+
+  <div class="market-grid">
+    <div class="market-card reveal">
+      <div class="market-card-icon">✈️</div>
+      <div class="market-card-title">Airports</div>
+      <div class="market-card-num">~530</div>
+      <div class="market-card-desc">Commercial service airports in the U.S. (FAA, 2024). The FAA's Air Traffic Organization serves 3M+ passengers per day across 44,000+ daily flights. Post-security water refill stations are prime placement locations.</div>
+      <div class="market-card-source">Source: FAA Air Traffic by the Numbers (FY2024) · BTS Top 50 U.S. Airports</div>
+    </div>
+    <div class="market-card reveal reveal-delay-1">
+      <div class="market-card-icon">🏥</div>
+      <div class="market-card-title">Hospitals</div>
+      <div class="market-card-num">6,100</div>
+      <div class="market-card-desc">Total U.S. hospitals as of 2024 (AHA 2024 Annual Survey). Infection control is a primary operational priority. Staff carry bottles into patient areas all day — a clear hygiene risk that facilities are motivated to address.</div>
+      <div class="market-card-source">Source: American Hospital Association Fast Facts 2026 (2024 data)</div>
+    </div>
+    <div class="market-card reveal reveal-delay-2">
+      <div class="market-card-icon">🏋️</div>
+      <div class="market-card-title">Gyms & Fitness Centers</div>
+      <div class="market-card-num">77M</div>
+      <div class="market-card-desc">U.S. fitness facility members in 2024 — a record high, up 20% since 2019 (Health & Fitness Association). ~31,000 health clubs operate nationally. Members bring bottles to every class; sweat accelerates bacterial growth significantly.</div>
+      <div class="market-card-source">Source: HFA 2025 U.S. Health & Fitness Consumer Report (April 2025)</div>
+    </div>
+    <div class="market-card reveal reveal-delay-3">
+      <div class="market-card-icon">🎓</div>
+      <div class="market-card-title">Universities</div>
+      <div class="market-card-num">5,819</div>
+      <div class="market-card-desc">Title IV postsecondary institutions in the 2023-24 academic year (NCES). Strong sustainability culture on campuses, existing water refill infrastructure, and a large captive user base. Penn State is our first pilot target.</div>
+      <div class="market-card-source">Source: NCES IPEDS Press Release, August 21, 2024</div>
+    </div>
+  </div>
+
+  <div class="revenue-model reveal">
+    <h3>Business Model: B2B Placement + Revenue Share</h3>
+    <div class="revenue-streams">
+      <div class="revenue-stream">
+        <div class="stream-label">Per-Use Fee</div>
+        <div class="stream-value">$1.00–1.50</div>
+        <div class="stream-desc">End user pays per cycle. HydroHalo retains 70%; institution keeps 30% as passive revenue. $1.50 ceiling validated by customer discovery surveys.</div>
+      </div>
+      <div class="revenue-stream">
+        <div class="stream-label">Machine Sale / Lease</div>
+        <div class="stream-value">$2,000–3,500</div>
+        <div class="stream-desc">Outright purchase at production scale, or $150–250/month lease. Lease model lowers barrier to entry and creates a long-term relationship.</div>
+      </div>
+      <div class="revenue-stream">
+        <div class="stream-label">Maintenance Contract</div>
+        <div class="stream-value">$300–600/yr</div>
+        <div class="stream-desc">Annual contract covering scheduled cleaning, repairs, UV-C LED replacement, and filter changes. Sticky, recurring revenue per unit deployed.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PROTOTYPE
+═══════════════════════════════════════ -->
+<section id="prototype">
+  <div class="proto-layout">
+    <div>
+      <div class="section-tag reveal">The Prototype</div>
+      <h2 class="section-title reveal reveal-delay-1">
+        Version 1.<br>
+        <span class="italic accent">Built to prove it.</span>
+      </h2>
+      <p class="section-body reveal reveal-delay-2">
+        A working plexiglass and acrylic enclosure with an Arduino-controlled three-stage cycle. Every component is off-the-shelf and sourced. Total prototype build cost: under $200.
+      </p>
+
+      <div class="proto-specs reveal reveal-delay-3">
+        <div class="spec-row"><span class="spec-key">Enclosure</span><span class="spec-val">14" × 14" × 18" clear plexiglass, 1/8" thick</span></div>
+        <div class="spec-row"><span class="spec-key">Controller</span><span class="spec-val">Arduino Uno R3 (ATmega328P)</span></div>
+        <div class="spec-row"><span class="spec-key">UV-C Source</span><span class="spec-val">265–275 nm SMD3535 LED strip, 12V DC</span></div>
+        <div class="spec-row"><span class="spec-key">Water Pump</span><span class="spec-val">12V DC submersible, 240 L/h, IP68</span></div>
+        <div class="spec-row"><span class="spec-key">Dryer</span><span class="spec-val">5V USB centrifugal blower, 50–75 mm</span></div>
+        <div class="spec-row"><span class="spec-key">Water Inlet</span><span class="spec-val">Standard 3/8" hose barb, sink connector</span></div>
+        <div class="spec-row"><span class="spec-key">Safety</span><span class="spec-val">Door interlock: Arduino cuts UV-C on open</span></div>
+        <div class="spec-row"><span class="spec-key">Cycle Time</span><span class="spec-val">~60 seconds total</span></div>
+      </div>
+
+      <div class="proto-visual reveal" style="margin-top:32px;">
+        <svg viewBox="0 0 375 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:380px;height:auto;display:block;margin:0 auto 16px;">
+          <defs>
+            <radialGradient id="kuvg" cx="55%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#9060ff" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#9060ff" stop-opacity="0"/>
+            </radialGradient>
+            <style>
+              .kfan   { animation: kfanSpin 1.4s linear infinite; transform-box: fill-box; transform-origin: center; }
+              .kuv    { animation: kuvPulse 2.8s ease-in-out infinite; }
+              .kled   { animation: kledBlink 1.8s ease-in-out infinite; }
+              .kspray { animation: ksprayAnim 1.6s ease-in-out infinite; }
+              .kd1    { animation: kdripFall 2.2s ease-in infinite 0s; }
+              .kd2    { animation: kdripFall 2.2s ease-in infinite 0.55s; }
+              .kd3    { animation: kdripFall 2.2s ease-in infinite 1.1s; }
+              .kd4    { animation: kdripFall 2.2s ease-in infinite 1.65s; }
+              @keyframes kfanSpin   { to { transform: rotate(360deg); } }
+              @keyframes kuvPulse   { 0%,100%{opacity:0.3} 50%{opacity:0.85} }
+              @keyframes kledBlink  { 0%,100%{opacity:0.4} 50%{opacity:1} }
+              @keyframes ksprayAnim { 0%,100%{opacity:0.2} 60%{opacity:1} }
+              @keyframes kdripFall  { 0%{transform:translateY(0);opacity:0.65} 100%{transform:translateY(35px);opacity:0} }
+            </style>
+          </defs>
+
+          <!-- BACK WALL -->
+          <polygon points="100,46 265,46 265,223 100,223" fill="rgba(7,12,25,0.92)" stroke="rgba(0,200,240,0.07)" stroke-width="1"/>
+
+          <!-- UV GLOW -->
+          <ellipse class="kuv" cx="182" cy="125" rx="92" ry="62" fill="url(#kuvg)"/>
+
+          <!-- UV-C LED STRIP -->
+          <rect x="112" y="56" width="140" height="4" rx="2" fill="rgba(150,80,255,0.2)" stroke="rgba(150,80,255,0.55)" stroke-width="1"/>
+          <circle cx="122" cy="58" r="2.2" fill="#a060ff" class="kuv"/>
+          <circle cx="140" cy="58" r="2.2" fill="#a060ff" class="kuv" style="animation-delay:.25s"/>
+          <circle cx="158" cy="58" r="2.2" fill="#a060ff" class="kuv" style="animation-delay:.5s"/>
+          <circle cx="176" cy="58" r="2.2" fill="#a060ff" class="kuv" style="animation-delay:.75s"/>
+          <circle cx="194" cy="58" r="2.2" fill="#a060ff" class="kuv" style="animation-delay:.5s"/>
+          <circle cx="212" cy="58" r="2.2" fill="#a060ff" class="kuv" style="animation-delay:.25s"/>
+          <circle cx="230" cy="58" r="2.2" fill="#a060ff" class="kuv"/>
+          <circle cx="248" cy="58" r="2.2" fill="#a060ff" class="kuv" style="animation-delay:.75s"/>
+          <!-- UV rays -->
+          <line x1="140" y1="61" x2="128" y2="100" stroke="rgba(150,80,255,0.22)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="160" y1="61" x2="155" y2="108" stroke="rgba(150,80,255,0.3)"  stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="183" y1="61" x2="182" y2="115" stroke="rgba(150,80,255,0.38)" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="206" y1="61" x2="212" y2="108" stroke="rgba(150,80,255,0.3)"  stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="228" y1="61" x2="240" y2="100" stroke="rgba(150,80,255,0.22)" stroke-width="1.2" stroke-linecap="round"/>
+
+          <!-- SPRAY NOZZLE -->
+          <circle cx="127" cy="72" r="5.5" fill="rgba(0,200,240,0.1)" stroke="rgba(0,200,240,0.6)" stroke-width="1.5"/>
+          <g class="kspray">
+            <line x1="121" y1="77" x2="108" y2="98"  stroke="rgba(0,200,240,0.7)"  stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="125" y1="78" x2="120" y2="104" stroke="rgba(0,200,240,0.85)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="128" y1="78" x2="128" y2="106" stroke="rgba(0,200,240,0.9)"  stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="131" y1="78" x2="137" y2="104" stroke="rgba(0,200,240,0.85)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="135" y1="77" x2="148" y2="98"  stroke="rgba(0,200,240,0.7)"  stroke-width="1.2" stroke-linecap="round"/>
+          </g>
+
+          <!-- GRATE FLOOR -->
+          <polygon points="45,235 210,235 265,203 100,203" fill="rgba(16,32,60,0.72)" stroke="rgba(0,200,240,0.4)" stroke-width="1.5"/>
+          <line x1="72"  y1="235" x2="127" y2="203" stroke="rgba(0,200,240,0.22)" stroke-width="0.9"/>
+          <line x1="99"  y1="235" x2="154" y2="203" stroke="rgba(0,200,240,0.22)" stroke-width="0.9"/>
+          <line x1="126" y1="235" x2="181" y2="203" stroke="rgba(0,200,240,0.22)" stroke-width="0.9"/>
+          <line x1="153" y1="235" x2="208" y2="203" stroke="rgba(0,200,240,0.22)" stroke-width="0.9"/>
+          <line x1="180" y1="235" x2="235" y2="203" stroke="rgba(0,200,240,0.22)" stroke-width="0.9"/>
+          <line x1="45"  y1="235" x2="265" y2="203" stroke="rgba(0,200,240,0.18)" stroke-width="0.9"/>
+          <line x1="60"  y1="227" x2="265" y2="197" stroke="rgba(0,200,240,0.15)" stroke-width="0.9"/>
+          <line x1="78"  y1="219" x2="265" y2="191" stroke="rgba(0,200,240,0.12)" stroke-width="0.9"/>
+          <line x1="45"  y1="241" x2="252" y2="210" stroke="rgba(0,200,240,0.1)"  stroke-width="0.9"/>
+
+          <!-- WATER BOTTLE -->
+          <rect x="96"  y="162" width="30" height="71" rx="4.5" fill="rgba(232,184,75,0.1)"  stroke="rgba(232,184,75,0.8)" stroke-width="1.8"/>
+          <rect x="103" y="147" width="16" height="17" rx="3"   fill="rgba(232,184,75,0.08)" stroke="rgba(232,184,75,0.7)" stroke-width="1.8"/>
+          <ellipse cx="111" cy="147" rx="8" ry="4" fill="rgba(232,184,75,0.22)" stroke="rgba(232,184,75,0.9)" stroke-width="1.8"/>
+          <rect x="99"  y="168" width="5"  height="50" rx="2.5" fill="rgba(232,184,75,0.12)"/>
+
+          <!-- LEFT FACE -->
+          <polygon points="45,78 100,46 100,223 45,235" fill="rgba(200,232,248,0.03)" stroke="rgba(200,232,248,0.28)" stroke-width="1.5"/>
+          <line x1="55" y1="97"  x2="85" y2="70"  stroke="rgba(255,255,255,0.09)" stroke-width="8" stroke-linecap="round"/>
+          <line x1="58" y1="145" x2="85" y2="122" stroke="rgba(255,255,255,0.05)" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- RIGHT FACE -->
+          <polygon points="210,78 265,46 265,223 210,235" fill="rgba(200,232,248,0.04)" stroke="rgba(200,232,248,0.28)" stroke-width="1.5"/>
+          <line x1="220" y1="92" x2="254" y2="65" stroke="rgba(255,255,255,0.09)" stroke-width="7" stroke-linecap="round"/>
+
+          <!-- FRONT FACE (hinged plexiglass door) -->
+          <polygon points="45,78 210,78 210,235 45,235" fill="rgba(200,232,248,0.025)" stroke="rgba(200,232,248,0.38)" stroke-width="1.8"/>
+          <line x1="128" y1="78" x2="128" y2="235" stroke="rgba(200,232,248,0.15)" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="64"  y1="94"  x2="90"  y2="80"  stroke="rgba(255,255,255,0.09)" stroke-width="12" stroke-linecap="round"/>
+          <line x1="170" y1="107" x2="196" y2="92"  stroke="rgba(255,255,255,0.06)" stroke-width="7"  stroke-linecap="round"/>
+
+          <!-- TOP FACE (lid) -->
+          <polygon points="45,78 210,78 265,46 100,46" fill="rgba(200,232,248,0.055)" stroke="rgba(200,232,248,0.42)" stroke-width="1.8"/>
+          <!-- Dryer duct hole -->
+          <ellipse cx="228" cy="58" rx="10" ry="6"   fill="rgba(200,100,80,0.14)" stroke="rgba(200,100,80,0.5)"  stroke-width="1.5"/>
+          <!-- Status LED hole -->
+          <ellipse cx="252" cy="50" rx="6"  ry="3.8" fill="rgba(0,200,240,0.15)"  stroke="rgba(0,200,240,0.5)"   stroke-width="1.5"/>
+          <ellipse class="kled" cx="252" cy="50" rx="3.2" ry="2.2" fill="rgba(0,200,240,0.65)"/>
+          <!-- Water inlet hole -->
+          <ellipse cx="132" cy="54" rx="6.5" ry="4"  fill="rgba(0,200,240,0.1)"   stroke="rgba(200,232,248,0.45)" stroke-width="1.5"/>
+
+          <!-- EXTERNAL WATER INLET PIPE -->
+          <line x1="132" y1="22" x2="132" y2="54" stroke="rgba(200,232,248,0.6)" stroke-width="2.5" stroke-linecap="round"/>
+          <rect x="125" y="14" width="14" height="10" rx="2.5" fill="rgba(18,35,65,0.95)" stroke="rgba(200,232,248,0.55)" stroke-width="1.5"/>
+
+          <!-- EXTERNAL DRYER FAN -->
+          <path d="M 265,52 C 274,48 278,38 285,30" fill="none" stroke="rgba(200,100,80,0.42)" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="285" cy="25" r="22" fill="rgba(18,34,62,0.95)" stroke="rgba(200,100,80,0.65)" stroke-width="2"/>
+          <g class="kfan" style="transform-origin:285px 25px">
+            <path d="M 285,25 L 276,11 Q 283,9  291,13 Z" fill="rgba(200,100,80,0.5)"/>
+            <path d="M 285,25 L 299,16 Q 300,23 297,30 Z" fill="rgba(200,100,80,0.5)"/>
+            <path d="M 285,25 L 294,39 Q 287,41 279,37 Z" fill="rgba(200,100,80,0.5)"/>
+            <path d="M 285,25 L 271,34 Q 270,27 273,20 Z" fill="rgba(200,100,80,0.5)"/>
+          </g>
+          <circle cx="285" cy="25" r="4.5" fill="rgba(200,100,80,0.45)" stroke="rgba(200,100,80,0.85)" stroke-width="1.5"/>
+
+          <!-- WATER DRIPS THROUGH GRATE -->
+          <circle class="kd1" cx="70"  cy="242" r="2.2" fill="rgba(0,200,240,0.55)"/>
+          <circle class="kd2" cx="108" cy="244" r="1.8" fill="rgba(0,200,240,0.5)"/>
+          <circle class="kd3" cx="148" cy="242" r="2.2" fill="rgba(0,200,240,0.6)"/>
+          <circle class="kd4" cx="182" cy="243" r="1.8" fill="rgba(0,200,240,0.45)"/>
+
+          <!-- LABELS -->
+          <!-- UV-C label -->
+          <line x1="258" y1="60" x2="275" y2="78" stroke="rgba(150,80,255,0.5)" stroke-width="1" stroke-dasharray="4,2"/>
+          <rect x="275" y="68" width="95" height="30" rx="4" fill="rgba(10,8,30,0.72)"/>
+          <text x="282" y="82" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="600" fill="rgba(180,120,255,1)">UV-C LED Strip</text>
+          <text x="282" y="94" font-family="Inter,system-ui,sans-serif" font-size="10" fill="rgba(180,120,255,0.7)">265–275 nm germicidal</text>
+
+          <!-- Status LED label -->
+          <line x1="254" y1="52" x2="275" y2="104" stroke="rgba(0,200,240,0.4)" stroke-width="1" stroke-dasharray="4,2"/>
+          <rect x="275" y="98" width="80" height="18" rx="4" fill="rgba(10,8,30,0.72)"/>
+          <text x="282" y="111" font-family="Inter,system-ui,sans-serif" font-size="10" font-weight="600" fill="rgba(0,210,255,0.95)">Status LED</text>
+
+          <!-- Blower fan label -->
+          <rect x="240" y="-5" width="90" height="18" rx="4" fill="rgba(10,8,30,0.72)" transform="translate(0,0)"/>
+          <text x="248" y="7" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="600" fill="rgba(240,130,100,1)">Blower / Dryer</text>
+
+          <!-- Water inlet label -->
+          <rect x="104" y="5" width="76" height="18" rx="4" fill="rgba(10,8,30,0.72)"/>
+          <text x="110" y="18" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="600" fill="rgba(200,232,248,0.95)">Water inlet</text>
+
+          <!-- Grate label -->
+          <line x1="47" y1="238" x2="8" y2="262" stroke="rgba(0,200,240,0.4)" stroke-width="1" stroke-dasharray="4,2"/>
+          <rect x="0" y="256" width="80" height="28" rx="4" fill="rgba(10,8,30,0.72)"/>
+          <text x="6" y="269" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="600" fill="rgba(0,210,255,0.95)">Drain grate</text>
+          <text x="6" y="280" font-family="Inter,system-ui,sans-serif" font-size="10" fill="rgba(0,210,255,0.65)">water falls through</text>
+
+          <!-- Bottle label -->
+          <line x1="126" y1="190" x2="158" y2="210" stroke="rgba(232,184,75,0.45)" stroke-width="1" stroke-dasharray="4,2"/>
+          <rect x="155" y="206" width="96" height="18" rx="4" fill="rgba(10,8,30,0.72)"/>
+          <text x="161" y="219" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="600" fill="rgba(232,184,75,0.95)">Water bottle</text>
+        </svg>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.08em;text-align:center;">
+          Prototype diagram — UV-C cycle active
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="bom-title reveal">Bill of Materials</div>
+      <table class="bom-table reveal reveal-delay-1">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+            <th>Est. Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Arduino Uno R3</td><td>Cycle controller</td><td>$25–28</td></tr>
+          <tr><td>UV-C LED Strip (265–275nm)</td><td>Germicidal sterilization</td><td>$18–30</td></tr>
+          <tr><td>12V Submersible Pump</td><td>Water rinse</td><td>$10–15</td></tr>
+          <tr><td>Blower Fan (5V USB)</td><td>Drying cycle</td><td>$8–12</td></tr>
+          <tr><td>Plexiglass Sheets (×6)</td><td>Enclosure walls</td><td>$25–35</td></tr>
+          <tr><td>Sink Fitting (3/8")</td><td>Water inlet/outlet</td><td>$5–10</td></tr>
+          <tr><td>LED Indicator + Switches</td><td>Status / control</td><td>$5–11</td></tr>
+          <tr><td>12V Wall Adapter</td><td>Power supply</td><td>$8–12</td></tr>
+          <tr><td>Tubing + Spray Nozzle</td><td>Water routing</td><td>$10–16</td></tr>
+          <tr><td>Misc. (wiring, sealant, hardware)</td><td>Assembly</td><td>$10–15</td></tr>
+          <tr class="bom-total">
+            <td colspan="2">Total Prototype Cost</td>
+            <td>$124–184</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:32px;background:var(--panel);border:1px solid var(--rim);border-radius:var(--r);padding:28px;" class="reveal reveal-delay-2">
+        <div style="font-family:var(--text);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;">Unit Economics at Scale</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div style="font-family:var(--display);font-size:28px;font-weight:800;color:var(--white);letter-spacing:-0.03em;">$3,833</div>
+            <div style="font-family:var(--text);font-size:13px;color:var(--body);margin-top:6px;">Annual revenue per machine<br><span style="color:var(--muted)">conservative: 15 uses/day</span></div>
+          </div>
+          <div>
+            <div style="font-family:var(--display);font-size:28px;font-weight:800;color:var(--gold);letter-spacing:-0.03em;">~4 mo.</div>
+            <div style="font-family:var(--text);font-size:13px;color:var(--body);margin-top:6px;">Payback period<br><span style="color:var(--muted)">on production cost</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     TEAM
+═══════════════════════════════════════ -->
+<section id="team">
+  <div class="team-header">
+    <div class="section-tag reveal">The Team</div>
+    <h2 class="section-title reveal reveal-delay-1">Built at <span class="accent">Penn State</span></h2>
+    <p class="section-body reveal reveal-delay-2" style="margin:0 auto;text-align:center;">
+      Group 6 — Technology Entrepreneurship. Five students from different disciplines building something that actually matters.
+    </p>
+  </div>
+
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <div class="team-avatar">S</div>
+      <div class="team-name">Somdatta</div>
+    </div>
+    <div class="team-card reveal reveal-delay-1">
+      <div class="team-avatar">K</div>
+      <div class="team-name">Kritik</div>
+    </div>
+    <div class="team-card reveal reveal-delay-2">
+      <div class="team-avatar">A</div>
+      <div class="team-name">Asmita</div>
+    </div>
+    <div class="team-card reveal reveal-delay-3">
+      <div class="team-avatar">J</div>
+      <div class="team-name">Julian</div>
+    </div>
+    <div class="team-card reveal reveal-delay-4">
+      <div class="team-avatar">T</div>
+      <div class="team-name">Tristan</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:60px;" class="reveal">
+    <div style="font-family:var(--text);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Course</div>
+    <div style="font-family:var(--display);font-size:19px;font-weight:700;color:var(--white);">Technology Entrepreneurship · Penn State University · Spring 2026</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     CONTACT / CTA
+═══════════════════════════════════════ -->
+<section id="contact">
+  <div class="cta-block">
+    <div class="section-tag reveal">Get In Touch</div>
+    <h2 class="cta-title reveal reveal-delay-1">
+      Interested in<br><span class="accent">HydroHalo?</span>
+    </h2>
+    <p class="cta-desc reveal reveal-delay-2">
+      Whether you're an institution interested in a pilot unit, an investor, or a judge at our final presentation — we'd love to talk.
+    </p>
+
+    <div class="contact-links reveal reveal-delay-3">
+      <a href="mailto:hydrohalo@psu.edu" class="contact-chip">
+        <span class="chip-icon">✉️</span>
+        hydrohalo@psu.edu
+      </a>
+      <a href="#science" class="contact-chip">
+        <span class="chip-icon">🔬</span>
+        Read the Science
+      </a>
+      <a href="#prototype" class="contact-chip">
+        <span class="chip-icon">⚙️</span>
+        Prototype Specs
+      </a>
+    </div>
+
+    <div style="border-top:1px solid var(--rim);padding-top:40px;margin-top:20px;" class="reveal reveal-delay-4">
+      <div style="font-family:var(--text);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:20px;">Peer-Reviewed Sources</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;font-family:var(--text);font-size:13px;">
+        <a href="https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2021.719578/full" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">Frontiers in Microbiology (2021)</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://www.nature.com/articles/s41598-026-44556-8" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">Scientific Reports / Nature (2026)</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://link.springer.com/article/10.1007/s43630-023-00521-2" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">Springer Nature (2023)</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8446598/" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">PMC8446598</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10273798/" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">PMC10273798</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://www.aha.org/statistics/fast-facts-us-hospitals" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">AHA (2026)</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://nces.ed.gov/whatsnew/press_releases/8_21_2024.asp" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">NCES (2024)</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://www.healthandfitness.org/one-in-four-americans-belonged-to-a-gym-in-2024/" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">HFA (2025)</a>
+        <span style="color:var(--rim)">·</span>
+        <a href="https://www.faa.gov/air_traffic/by_the_numbers" target="_blank" style="color:var(--body);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--body)'">FAA FY2024</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-brand">
+    <div class="nav-logo-mark" style="width:28px;height:28px;font-size:14px;">💧</div>
+    HydroHalo
+  </div>
+  <div class="footer-copy">© 2026 HydroHalo · Penn State University · Group 6</div>
+  <div class="footer-links">
+    <a href="#problem">Problem</a>
+    <a href="#how">Solution</a>
+    <a href="#science">Science</a>
+    <a href="#market">Market</a>
+    <a href="#prototype">Prototype</a>
+  </div>
+</footer>
+
+<!-- ═══ JS ═══ -->
+<script>
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursor-trail');
+let mx = 0, my = 0, tx = 0, ty = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+});
+function animateTrail() {
+  tx += (mx - tx) * 0.12;
+  ty += (my - ty) * 0.12;
+  trail.style.left = tx + 'px'; trail.style.top = ty + 'px';
+  requestAnimationFrame(animateTrail);
+}
+animateTrail();
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '20px'; cursor.style.height = '20px';
+    trail.style.width = '52px'; trail.style.height = '52px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '12px'; cursor.style.height = '12px';
+    trail.style.width = '36px'; trail.style.height = '36px';
+  });
+});
+
+/* ── NAV SCROLL ── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+/* ── MOBILE NAV ── */
+const toggle = document.getElementById('nav-toggle');
+const navLinks = document.getElementById('nav-links');
+toggle.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+  toggle.classList.toggle('open');
+});
+navLinks.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+    toggle.classList.remove('open');
+  });
+});
+
+/* ── PARTICLES ── */
+const particleContainer = document.getElementById('particles');
+for (let i = 0; i < 40; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.cssText = `
+    left: ${Math.random() * 100}%;
+    animation-duration: ${6 + Math.random() * 10}s;
+    animation-delay: ${Math.random() * 8}s;
+    --drift: ${(Math.random() - 0.5) * 120}px;
+    width: ${1 + Math.random() * 2}px;
+    height: ${1 + Math.random() * 2}px;
+    opacity: ${0.3 + Math.random() * 0.5};
+  `;
+  particleContainer.appendChild(p);
+}
+
+/* ── SCROLL REVEAL ── */
+const reveals = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+reveals.forEach(el => revealObs.observe(el));
+
+/* ── COUNTER ANIMATION ── */
+function animateCounter(el, target, suffix, isDecimal, duration = 1400) {
+  const start = performance.now();
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = eased * target;
+    if (progress < 1) {
+      el.textContent = isDecimal ? current.toFixed(1) + suffix : Math.floor(current).toLocaleString() + suffix;
+      requestAnimationFrame(step);
+    } else {
+      el.textContent = isDecimal ? target.toFixed(2) + suffix : target.toLocaleString() + suffix;
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+const statMap = {
+  '20.8M': { val: 20.8, suffix: 'M', decimal: true },
+  '48h':   { val: 48,   suffix: 'h', decimal: false },
+  '99.99%':{ val: 99.99,suffix: '%', decimal: true },
+  '60s':   { val: 60,   suffix: 's', decimal: false },
+};
+
+const statObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const key = e.target.textContent.trim();
+      const cfg = statMap[key];
+      if (cfg) animateCounter(e.target, cfg.val, cfg.suffix, cfg.decimal);
+      statObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.hero-stat-num').forEach(el => statObs.observe(el));
+
+/* ── SMOOTH SECTION HIGHLIGHT ── */
+const sections = document.querySelectorAll('section[id]');
+const sectionObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + id ? 'var(--cyan)' : '';
+      });
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => sectionObs.observe(s));
+</script>
+</body>
+</html>

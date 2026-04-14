@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(rsync -av --exclude='node_modules' --exclude='dist' /Users/kk/hydrahalo/hydrahalo-app/ /Users/kk/Desktop/HydraHalo-App/)"
+    ]
+  }
+}

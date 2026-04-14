@@ -1,0 +1,97 @@
+#science { padding: 96px 48px; background: var(--deep); }
+.science-layout {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+}
+.science-left { position: sticky; top: 100px; }
+
+.mechanism-visual {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: 16px; padding: 32px; margin-top: 32px;
+  position: relative; overflow: hidden;
+}
+.mechanism-visual::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,200,240,0.1), transparent 70%);
+}
+.mech-label {
+  font-family: var(--mono); font-size: 10px; color: var(--body);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+}
+.mech-desc { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.7; }
+
+.dna-wrap { display: flex; gap: 16px; align-items: center; margin: 20px 0; }
+.dna-diagram { display: flex; flex-direction: column; gap: 7px; }
+.dna-row { display: flex; align-items: center; gap: 5px; height: 20px; }
+.dna-base {
+  width: 20px; height: 14px; border-radius: 3px;
+  font-family: var(--mono); font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--void); font-weight: 600;
+}
+.base-t { background: #60c8f0; }
+.base-a { background: #e8b84b; }
+.base-c { background: #80e890; }
+.base-g { background: #f06880; }
+.dna-base.damaged { background: #f09060 !important; outline: 2px solid rgba(255,100,0,0.7); }
+.dna-bond { width: 6px; height: 2px; background: var(--rim); }
+.dna-backbone-l { width: 8px; border-right: 2px solid rgba(0,200,240,0.3); align-self: stretch; }
+.dna-backbone-r { width: 8px; border-left:  2px solid rgba(0,200,240,0.3); align-self: stretch; }
+
+.dna-explanation { flex: 1; }
+.arrow-beam {
+  width: 100%; height: 3px;
+  background: linear-gradient(to right, var(--cyan), transparent);
+  border-radius: 2px;
+  animation: beam-pulse 2s ease-in-out infinite;
+  margin-bottom: 6px;
+}
+@keyframes beam-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+.arrow-label {
+  font-family: var(--mono); font-size: 9px; color: var(--cyan);
+  letter-spacing: 0.1em; margin-bottom: 10px;
+}
+.mech-advantage {
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rim);
+}
+
+.science-studies { display: flex; flex-direction: column; gap: 20px; }
+.study-card {
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: var(--r); padding: 24px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.study-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-3px); }
+.study-journal {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--cyan);
+  background: var(--cyan-dim); border: 1px solid rgba(0,200,240,0.2);
+  display: inline-block; padding: 3px 10px; border-radius: 4px; margin-bottom: 12px;
+}
+.study-title-text {
+  font-family: var(--display); font-size: 15px; font-weight: 700;
+  color: var(--white); line-height: 1.4; margin-bottom: 8px;
+}
+.study-authors { font-family: var(--text); font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.study-finding { font-family: var(--text); font-size: 14px; color: var(--body); line-height: 1.75; margin-bottom: 14px; }
+.study-result {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,200,100,0.08); border: 1px solid rgba(0,200,100,0.2);
+  border-radius: 6px; padding: 7px 12px;
+  font-family: var(--text); font-size: 13px; font-weight: 500; color: #60e8a0;
+}
+.study-result::before { content: '✓'; }
+.study-link {
+  display: block; margin-top: 12px;
+  font-family: var(--text); font-size: 13px; color: var(--ice-dim);
+  text-decoration: none; transition: color 0.2s;
+}
+.study-link:hover { color: var(--cyan); }
+
+@media (max-width: 900px) {
+  #science { padding: 64px 20px; }
+  .science-layout { grid-template-columns: 1fr; gap: 48px; }
+  .science-left { position: static; }
+}
