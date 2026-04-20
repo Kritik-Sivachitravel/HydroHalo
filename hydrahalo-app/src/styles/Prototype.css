@@ -23,7 +23,8 @@
 }
 
 .bom-title { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--white); margin-bottom: 20px; }
-.bom-table { width: 100%; border-collapse: collapse; }
+.bom-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--r); }
+.bom-table { width: 100%; border-collapse: collapse; min-width: 380px; }
 .bom-table th {
   text-align: left; font-family: var(--text); font-size: 12px;
   font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
@@ -64,4 +65,12 @@
 @media (max-width: 900px) {
   #prototype { padding: 64px 20px; }
   .proto-layout { grid-template-columns: 1fr; gap: 48px; }
+}
+@media (max-width: 480px) {
+  #prototype { padding: 56px 16px; }
+  .spec-row { flex-wrap: wrap; gap: 4px; }
+  .spec-val { text-align: left; font-size: 12px; }
+  .unit-num { font-size: 24px; }
+  .bom-title { font-size: 18px; }
+  .unit-economics { padding: 18px 16px; }
 }

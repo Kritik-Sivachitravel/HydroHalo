@@ -96,7 +96,7 @@ export default function Hero() {
         </h1>
 
         <p className="hero-sub">
-          HydraHalo is an automated water bottle sanitization kiosk — combining a high-pressure
+          HydroHalo is an automated water bottle sanitization kiosk — combining a high-pressure
           rinse, warm-air drying, and UV-C sterilization into a single 60-second cycle. Deployed
           in airports, hospitals, gyms, and universities.
         </p>

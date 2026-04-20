@@ -6,7 +6,7 @@ const studies = [
     journal: 'Frontiers in Microbiology · 2021',
     title: 'Disinfection Performance of a Drinking Water Bottle System With a UV-C LED Cap Against Waterborne Pathogens',
     authors: 'Mariita et al. · Crystal IS / Asahi Kasei · doi:10.3389/fmicb.2021.719578',
-    finding: 'The most directly applicable study to HydraHalo\'s concept: UV-C LED caps applied to inoculated stainless-steel water bottles under worst-case stationary conditions. 55-second UV-C cycle tested.',
+    finding: 'The most directly applicable study to HydroHalo\'s concept: UV-C LED caps applied to inoculated stainless-steel water bottles under worst-case stationary conditions. 55-second UV-C cycle tested.',
     result: '99.99% E. coli inactivation in 55 seconds (LRV4)',
     url: 'https://www.frontiersin.org/journals/microbiology/articles/10.3389/fmicb.2021.719578/full',
   },

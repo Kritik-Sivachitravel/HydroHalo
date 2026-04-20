@@ -110,6 +110,7 @@ nav.scrolled {
 
 /* ── SECTIONS ── */
 section { position: relative; }
+section[id] { scroll-margin-top: 76px; }
 
 /* ── SECTION SHARED ── */
 .section-tag {

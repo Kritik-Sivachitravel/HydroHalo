@@ -9,7 +9,7 @@ const markets = [
 ];
 
 const streams = [
-  { label: 'Per-Use Fee',          value: '$1.00–1.50',   desc: 'End user pays per cycle. HydraHalo retains 70%; institution keeps 30% as passive revenue. $1.50 ceiling validated by customer discovery surveys.' },
+  { label: 'Per-Use Fee',          value: '$1.00–1.50',   desc: 'End user pays per cycle. HydroHalo retains 70%; institution keeps 30% as passive revenue. $1.50 ceiling validated by customer discovery surveys.' },
   { label: 'Machine Sale / Lease', value: '$2,000–3,500', desc: 'Outright purchase at production scale, or $150–250/month lease. Lease model lowers barrier to entry and creates a long-term relationship.' },
   { label: 'Maintenance Contract', value: '$300–600/yr',  desc: 'Annual contract covering scheduled cleaning, repairs, UV-C LED replacement, and filter changes. Sticky, recurring revenue per unit deployed.' },
 ];
@@ -25,7 +25,7 @@ export default function Market() {
           <span className="italic accent">Zero direct competitors.</span>
         </h2>
         <p className="section-body reveal reveal-delay-2">
-          HydraHalo operates on a B2B placement model — targeting institutions where large numbers
+          HydroHalo operates on a B2B placement model — targeting institutions where large numbers
           of people carry reusable bottles daily. No existing automated, brand-agnostic water bottle
           cleaning kiosk serves this institutional market.
         </p>

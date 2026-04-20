@@ -26,7 +26,7 @@ export default function HowItWorks() {
           Three stages.<br /><span className="italic accent">One clean bottle.</span>
         </h2>
         <p className="section-body reveal reveal-delay-2" style={{ margin: '0 auto', textAlign: 'center' }}>
-          HydraHalo sequences each stage in the order the science recommends — rinse first to
+          HydroHalo sequences each stage in the order the science recommends — rinse first to
           remove debris, dry to maximize UV-C efficiency, then sterilize.
         </p>
       </div>

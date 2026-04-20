@@ -117,3 +117,8 @@
 
 /* ── NO MORE WIPE — replaced by full fade on .water-intro--done ── */
 .water-intro__wipe { display: none; }
+
+@media (max-width: 480px) {
+  .water-intro__brand { font-size: 28px; gap: 12px; }
+  .water-intro__brand svg { width: 38px; height: 38px; }
+}

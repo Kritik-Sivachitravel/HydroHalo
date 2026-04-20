@@ -5,9 +5,9 @@ export default function Footer() {
     <footer>
       <div className="footer-brand">
         <HydraLogo size={26} />
-        HydraHalo
+        HydroHalo
       </div>
-      <div className="footer-copy">© 2026 HydraHalo · Penn State University · Group 6</div>
+      <div className="footer-copy">© 2026 HydroHalo · Penn State University · Group 6</div>
       <div className="footer-links">
         <a href="#problem">Problem</a>
         <a href="#how">Solution</a>

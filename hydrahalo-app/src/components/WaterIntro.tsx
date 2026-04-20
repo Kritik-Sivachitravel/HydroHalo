@@ -137,7 +137,7 @@ export default function WaterIntro({ onComplete }: WaterIntroProps) {
             </linearGradient>
           </defs>
         </svg>
-        <span>HydraHalo</span>
+        <span>HydroHalo</span>
       </div>
 
       {/* Reveal overlay that wipes away */}

@@ -62,6 +62,7 @@ export default function Prototype() {
         {/* Right col */}
         <div>
           <div className="bom-title reveal">Bill of Materials</div>
+          <div className="bom-table-wrap">
           <table className="bom-table reveal reveal-delay-1">
             <thead>
               <tr><th>Component</th><th>Purpose</th><th>Est. Cost</th></tr>
@@ -78,6 +79,7 @@ export default function Prototype() {
               </tr>
             </tbody>
           </table>
+          </div>
 
           <div className="unit-economics reveal reveal-delay-2">
             <div className="unit-econ-title">Unit Economics at Scale</div>

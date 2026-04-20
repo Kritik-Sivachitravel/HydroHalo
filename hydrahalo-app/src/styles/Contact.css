@@ -69,3 +69,8 @@
   #contact { padding: 64px 20px; }
   .ref-item { padding: 14px 12px; }
 }
+@media (max-width: 480px) {
+  #contact { padding: 56px 16px; }
+  .ref-label { font-size: 14px; }
+  .ref-citation { font-size: 12px; }
+}

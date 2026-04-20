@@ -1,4 +1,4 @@
-// Reusable HydraHalo logo — water drop with halo on top
+// Reusable HydroHalo logo — water drop with halo on top
 interface Props {
   size?: number;
 }

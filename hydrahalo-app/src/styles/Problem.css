@@ -68,3 +68,8 @@
   .problem-grid { grid-template-columns: 1fr; gap: 48px; }
   .problem-left { padding-right: 0; }
 }
+@media (max-width: 480px) {
+  #problem { padding: 56px 16px; }
+  .bacteria-card-num { font-size: 26px; }
+  .insight-block { padding: 22px 16px; }
+}

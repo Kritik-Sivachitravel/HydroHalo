@@ -40,7 +40,7 @@ export default function Navbar() {
         <div className="nav-logo-mark">
           <HydraLogo size={34} />
         </div>
-        HydraHalo
+        HydroHalo
       </a>
 
       <ul className={`nav-links${open ? ' open' : ''}`}>
