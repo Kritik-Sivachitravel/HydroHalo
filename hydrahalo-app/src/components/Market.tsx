@@ -6,6 +6,7 @@ const markets = [
   { icon: '🏥', title: 'Hospitals',          num: '6,100', desc: 'Total U.S. hospitals as of 2024 (AHA 2024). Infection control is a primary operational priority. Staff carry bottles into patient areas all day — a clear hygiene risk facilities are motivated to address.',    source: 'American Hospital Association Fast Facts 2026 (2024 data)' },
   { icon: '🏋️', title: 'Gyms & Fitness',    num: '77M',   desc: 'U.S. fitness facility members in 2024 — a record high, up 20% since 2019. ~31,000 health clubs operate nationally. Members bring bottles to every class; sweat accelerates bacterial growth significantly.', source: 'HFA 2025 U.S. Health & Fitness Consumer Report (April 2025)' },
   { icon: '🎓', title: 'Universities',       num: '5,819', desc: 'Title IV postsecondary institutions in the 2023-24 academic year (NCES). Strong sustainability culture, existing water refill infrastructure, and a large captive user base. Penn State is our first pilot target.',  source: 'NCES IPEDS Press Release, August 21, 2024' },
+  { icon: '🏨', title: 'Hotels',             num: '53K+',  desc: 'U.S. hotel properties serving 1.3 billion occupied room nights annually (AHLA 2024). On-site fitness centers, lobbies, and conference areas drive constant bottle use. 87% of guests rank cleanliness as their top booking factor — premium hygiene amenities directly support brand value and loyalty scores.', source: 'AHLA 2024 State of the Industry Report · STR/CoStar Group' },
 ];
 
 const streams = [
@@ -21,7 +22,7 @@ export default function Market() {
       <div className="market-intro">
         <div className="section-tag reveal">Market Opportunity</div>
         <h2 className="section-title reveal reveal-delay-1">
-          Four massive markets.<br />
+          Five massive markets.<br />
           <span className="italic accent">Zero direct competitors.</span>
         </h2>
         <p className="section-body reveal reveal-delay-2">

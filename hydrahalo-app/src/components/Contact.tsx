@@ -57,6 +57,11 @@ const sources = [
     citation: 'U.S. Environmental Protection Agency — Ultraviolet Disinfection Guidance Manual for the Long Term 2 Enhanced Surface Water Treatment Rule',
     url: 'https://www.epa.gov/ground-water-and-drinking-water/ultraviolet-disinfection-guidance-manual',
   },
+  {
+    label: 'AHLA 2024 State of the Hotel Industry',
+    citation: 'American Hotel & Lodging Association — 2024 State of the Industry Report. 53,000+ U.S. hotel properties, 1.3 billion occupied room nights annually.',
+    url: 'https://www.ahla.com/sites/default/files/SOTI.2024.Final_.Draft_.v4.pdf',
+  },
 ];
 
 export default function Contact() {
