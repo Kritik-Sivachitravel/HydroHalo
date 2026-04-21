@@ -38,7 +38,7 @@ export default function Hero() {
   useEffect(() => {
     const container = particleRef.current;
     if (!container) return;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 20; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
       p.style.cssText = `

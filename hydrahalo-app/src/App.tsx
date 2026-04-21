@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import './styles/globals.css';
 
-import WaterIntro from './components/WaterIntro';
-import Cursor     from './components/Cursor';
+import WaterIntro          from './components/WaterIntro';
+import BackgroundParticles from './components/BackgroundParticles';
+import Cursor              from './components/Cursor';
 import Navbar     from './components/Navbar';
 import Hero       from './components/Hero';
 import Problem    from './components/Problem';
@@ -29,6 +30,7 @@ export default function App() {
           pointerEvents: introComplete ? 'auto' : 'none',
         }}
       >
+        <BackgroundParticles />
         <Cursor />
         <Navbar />
         <main>

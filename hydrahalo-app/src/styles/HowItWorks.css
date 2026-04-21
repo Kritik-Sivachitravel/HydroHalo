@@ -10,7 +10,10 @@
   position: absolute; top: 48px; left: 16.7%; right: 16.7%;
   height: 1px;
   background: linear-gradient(to right, var(--cyan), transparent 40%, transparent 60%, var(--cyan));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.4s;
 }
+.cycle-steps.revealed::before { transform: scaleX(1); }
 
 .cycle-step {
   padding: 0 32px 48px; text-align: center; position: relative; z-index: 1;
@@ -24,6 +27,9 @@
   border: 1px solid var(--rim); background: var(--panel);
   transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
 }
+.cycle-step.visible .step-icon-bg  { animation: iconBounce 0.65s cubic-bezier(0.2,0.8,0.3,1) 0.1s both; }
+.cycle-step.visible .step-number   { animation: numPop    0.5s  cubic-bezier(0.2,0.8,0.3,1) 0.4s both; }
+.cycle-step.visible .step-icon-inner { animation: iconBounce 0.5s cubic-bezier(0.2,0.8,0.3,1) 0.25s both; }
 .cycle-step:hover .step-icon-bg {
   border-color: var(--cyan); background: rgba(0,200,240,0.06);
   box-shadow: 0 0 40px rgba(0,200,240,0.15);

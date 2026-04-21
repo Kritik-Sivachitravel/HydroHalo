@@ -21,6 +21,11 @@
   position: relative; overflow: hidden;
   transition: border-color 0.3s, transform 0.3s;
 }
+/* Staggered number pop when the cards container reveals */
+.bacteria-cards.visible .bacteria-card:nth-child(1) .bacteria-card-num { animation: numPop 0.55s cubic-bezier(0.2,0.8,0.3,1) 0.15s both; }
+.bacteria-cards.visible .bacteria-card:nth-child(2) .bacteria-card-num { animation: numPop 0.55s cubic-bezier(0.2,0.8,0.3,1) 0.30s both; }
+.bacteria-cards.visible .bacteria-card:nth-child(3) .bacteria-card-num { animation: numPop 0.55s cubic-bezier(0.2,0.8,0.3,1) 0.45s both; }
+.bacteria-cards.visible .bacteria-card:nth-child(4) .bacteria-card-num { animation: numPop 0.55s cubic-bezier(0.2,0.8,0.3,1) 0.60s both; }
 .bacteria-card:hover { border-color: var(--cyan); transform: translateX(4px); }
 .bacteria-card::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0;

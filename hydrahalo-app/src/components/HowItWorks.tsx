@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useReveal } from '../hooks/useReveal';
 import '../styles/HowItWorks.css';
 
@@ -18,6 +19,19 @@ const steps = [
 
 export default function HowItWorks() {
   useReveal();
+  const stepsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = stepsRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { el.classList.add('revealed'); obs.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <section id="how">
       <div className="how-header">
@@ -31,7 +45,7 @@ export default function HowItWorks() {
         </p>
       </div>
 
-      <div className="cycle-steps">
+      <div className="cycle-steps" ref={stepsRef}>
         {steps.map((s, i) => (
           <div className={`cycle-step reveal${i > 0 ? ` reveal-delay-${i}` : ''}`} key={s.num}>
             <div className="step-icon-wrap">

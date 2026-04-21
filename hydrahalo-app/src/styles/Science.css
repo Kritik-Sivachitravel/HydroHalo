@@ -62,8 +62,17 @@
   background: var(--panel); border: 1px solid var(--rim);
   border-radius: var(--r); padding: 24px;
   transition: border-color 0.3s, transform 0.3s;
+  position: relative;
 }
 .study-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-3px); }
+/* Cyan left-border draws downward when card enters view */
+.study-card::before {
+  content: ''; position: absolute; left: 0; top: 16px; bottom: 16px;
+  width: 2px; background: var(--cyan); border-radius: 2px;
+  transform: scaleY(0); transform-origin: top;
+  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1) 0.45s;
+}
+.study-card.visible::before { transform: scaleY(1); }
 .study-journal {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--cyan);

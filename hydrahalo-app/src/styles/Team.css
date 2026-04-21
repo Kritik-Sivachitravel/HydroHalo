@@ -11,6 +11,7 @@
   transition: border-color 0.3s, transform 0.3s;
 }
 .team-card:hover { border-color: rgba(0,200,240,0.3); transform: translateY(-6px); }
+.team-card.visible .team-avatar { animation: avatarPop 0.65s cubic-bezier(0.2,0.8,0.3,1) 0.15s both; }
 .team-avatar {
   width: 68px; height: 68px; border-radius: 50%;
   background: linear-gradient(135deg, var(--navy), var(--muted));
