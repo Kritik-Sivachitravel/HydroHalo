@@ -4,16 +4,16 @@ import '../styles/HowItWorks.css';
 
 const steps = [
   {
-    icon: '💧', num: 1, title: 'High-Pressure Rinse', time: '~20 seconds',
+    icon: '💧', num: 1, title: 'High-Pressure Rinse', time: '~30 seconds',
     desc: 'A pressurized water spray flushes the bottle interior and lid — removing visible debris, residue, and early-stage biofilm before UV-C exposure. UV-C works by line-of-sight; a pre-rinse is the scientifically correct first step.',
   },
   {
-    icon: '💨', num: 2, title: 'Warm-Air Drying', time: '~10 seconds',
+    icon: '💨', num: 2, title: 'Warm-Air Drying', time: '~30 seconds',
     desc: 'A blower fan circulates warm air through the bottle. Residual moisture scatters UV photons and reduces effective dose delivery. Drying before sterilization maximizes UV-C kill rate and prevents bacterial regrowth.',
   },
   {
-    icon: '✨', num: 3, title: 'UV-C Sterilization', time: '~30 seconds',
-    desc: 'UV-C LEDs at 265–275 nm — the peak germicidal wavelength — irradiate the clean, dry interior. Photons are absorbed by bacterial DNA, forming pyrimidine dimers that permanently block replication.',
+    icon: '✨', num: 3, title: 'UV-C Sterilization', time: 'Full 60 seconds',
+    desc: 'UV-C LEDs at 265–275 nm — the peak germicidal wavelength — run continuously throughout the entire cycle. Photons are absorbed by bacterial DNA, forming pyrimidine dimers that permanently block replication.',
   },
 ];
 
