@@ -33,6 +33,9 @@
 }
 @media (max-width: 480px) {
   #team { padding: 56px 16px; }
+  .team-header { margin-bottom: 36px; }
   .team-card { width: 130px; padding: 20px 14px; }
   .team-avatar { width: 58px; height: 58px; font-size: 18px; }
+  .team-name { font-size: 14px; }
+  .team-course-name { font-size: 16px; }
 }

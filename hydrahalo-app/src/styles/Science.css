@@ -107,6 +107,10 @@
 @media (max-width: 480px) {
   #science { padding: 56px 16px; }
   .mechanism-visual { padding: 20px 16px; }
+  .dna-wrap { flex-direction: column; gap: 12px; }
+  .dna-explanation { width: 100%; }
   .study-card { padding: 18px 16px; }
   .study-title-text { font-size: 14px; }
+  .study-finding { font-size: 13px; }
+  .study-result { font-size: 12px; padding: 6px 10px; }
 }

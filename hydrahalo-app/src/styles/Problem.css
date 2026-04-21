@@ -70,11 +70,18 @@
 
 @media (max-width: 900px) {
   #problem { padding: 64px 20px; }
-  .problem-grid { grid-template-columns: 1fr; gap: 48px; }
+  .problem-grid { grid-template-columns: 1fr; gap: 40px; }
   .problem-left { padding-right: 0; }
 }
 @media (max-width: 480px) {
-  #problem { padding: 56px 16px; }
-  .bacteria-card-num { font-size: 26px; }
-  .insight-block { padding: 22px 16px; }
+  #problem { padding: 48px 16px; }
+  .bacteria-card { padding: 18px 14px; }
+  .bacteria-card-num { font-size: 24px; }
+  .bacteria-card-unit { font-size: 10px; }
+  .bacteria-card-desc { font-size: 13px; }
+  .bacteria-card-source { font-size: 11px; }
+  .insight-block { padding: 18px 14px; }
+  .insight-item { gap: 10px; margin-bottom: 14px; }
+  .insight-icon { width: 30px; height: 30px; font-size: 14px; }
+  .insight-text { font-size: 14px; }
 }

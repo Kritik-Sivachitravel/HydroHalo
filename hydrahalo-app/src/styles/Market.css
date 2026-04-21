@@ -44,11 +44,27 @@
 
 @media (max-width: 900px) {
   #market { padding: 64px 20px; }
-  .market-grid { grid-template-columns: 1fr; }
-  .revenue-streams { grid-template-columns: 1fr; }
+  .market-intro { margin-bottom: 40px; }
+  .market-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  /* reset desktop "span 2" — not needed in single-column */
+  .market-card:last-child:nth-child(odd) { grid-column: span 1; }
+  .revenue-model { padding: 28px 20px; }
+  .revenue-model h3 { font-size: 18px; margin-bottom: 20px; }
+  .revenue-streams { grid-template-columns: 1fr; gap: 12px; }
 }
 @media (max-width: 480px) {
-  #market { padding: 56px 16px; }
-  .revenue-model { padding: 24px 16px; }
-  .stream-value { font-size: 18px; }
+  #market { padding: 48px 16px; }
+  .market-card { padding: 20px 16px; }
+  .market-card-icon  { font-size: 24px; margin-bottom: 8px; }
+  .market-card-title { font-size: 16px; }
+  .market-card-num   { font-size: 26px; }
+  .market-card-desc  { font-size: 13px; }
+  .market-card-source{ font-size: 11px; }
+  .revenue-model { padding: 20px 14px; }
+  .revenue-model h3 { font-size: 16px; }
+  .stream-value { font-size: 17px; }
+  .stream-desc  { font-size: 13px; }
 }

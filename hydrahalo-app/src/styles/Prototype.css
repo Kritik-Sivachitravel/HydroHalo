@@ -68,9 +68,11 @@
 }
 @media (max-width: 480px) {
   #prototype { padding: 56px 16px; }
+  .proto-visual { padding: 20px 16px; }
   .spec-row { flex-wrap: wrap; gap: 4px; }
   .spec-val { text-align: left; font-size: 12px; }
   .unit-num { font-size: 24px; }
+  .unit-econ-grid { grid-template-columns: 1fr; gap: 12px; }
   .bom-title { font-size: 18px; }
   .unit-economics { padding: 18px 16px; }
 }

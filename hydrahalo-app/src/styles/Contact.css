@@ -73,6 +73,8 @@
 }
 @media (max-width: 480px) {
   #contact { padding: 56px 16px; }
+  .ref-item { padding: 12px 8px; gap: 12px; }
+  .ref-num { min-width: 22px; }
   .ref-label { font-size: 14px; }
   .ref-citation { font-size: 12px; }
 }

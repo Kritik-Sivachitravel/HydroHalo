@@ -71,12 +71,21 @@
 
 @media (max-width: 900px) {
   #how { padding: 64px 20px; }
-  .cycle-steps { grid-template-columns: 1fr; }
+  .how-header { margin-bottom: 40px; }
+  .cycle-steps { grid-template-columns: 1fr; gap: 0; }
   .cycle-steps::before { display: none; }
+  .cycle-step { padding: 0 24px 40px; }
 }
 @media (max-width: 480px) {
-  #how { padding: 56px 16px; }
-  .cycle-step { padding: 0 16px 36px; }
-  .cycle-total { flex-direction: column; text-align: center; gap: 8px; }
-  .cycle-total-num { font-size: 34px; }
+  #how { padding: 48px 16px; }
+  .how-header { margin-bottom: 32px; }
+  .cycle-step { padding: 0 8px 32px; }
+  .step-icon-wrap { width: 80px; height: 80px; margin-bottom: 18px; }
+  .step-icon-inner { font-size: 26px; }
+  .step-title { font-size: 16px; }
+  .step-desc  { font-size: 13px; }
+  .cycle-total { flex-direction: column; text-align: center; gap: 6px; }
+  .cycle-total-num { font-size: 32px; }
+  .cycle-total-label { font-size: 13px; }
+  .cycle-total-desc  { font-size: 13px; }
 }
